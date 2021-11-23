@@ -10,7 +10,7 @@
 #include "SDF3Wrapper.h"
 
 
-TIME_UNIT algorithms::runSDF3Throughput(models::Dataflow* const  dataflow, std::string SDF3_binary) {
+TIME_UNIT algorithms::runSDF3Throughput(models::Dataflow* const dataflow, std::string SDF3_binary) {
 	static ARRAY_INDEX counter = 0;
 	std::string tmp_filename = "/tmp/tmp" + std::to_string(counter++) +  ".xml";
 	printers::writeSDF3File (tmp_filename,dataflow);

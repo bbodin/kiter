@@ -22,8 +22,8 @@ struct kperiodic_result_t {
 	std::set<Edge> critical_edges;
 };
 
-scheduling_t period2scheduling    (const models::Dataflow* const  dataflow,  periodicity_vector_t & kvector , TIME_UNIT throughput) ;
-models::Scheduling  period2Scheduling    (const models::Dataflow* const  dataflow,  periodicity_vector_t & kvector , kperiodic_result_t &) ;
+scheduling_t period2scheduling    (const models::Dataflow* const  dataflow, const periodicity_vector_t & kvector , TIME_UNIT throughput) ;
+models::Scheduling  period2Scheduling    (const models::Dataflow* const  dataflow, const  periodicity_vector_t & kvector , kperiodic_result_t &) ;
 
 namespace algorithms {
 
@@ -66,7 +66,8 @@ void BufferlessNoCScheduling(models::Dataflow* const  dataflow, parameters_list_
 		 models::Scheduling ASAPScheduling       (const models::Dataflow* const dataflow) ;
 		 void ASAPScheduling (models::Dataflow*  dataflow, parameters_list_t ) ;
 
-		 
+		 models::Scheduling So4Scheduling       (const models::Dataflow* const dataflow) ;
+		 void So4Scheduling (models::Dataflow*  dataflow, parameters_list_t ) ;
 
 	}
 }
@@ -100,6 +101,9 @@ transformation_t({ "1PeriodicScheduling" , "CSDF 1-Periodic Scheduling [Bodin201
 
 ADD_TRANSFORMATION(ASAPScheduling,
 transformation_t({ "ASAPScheduling" , "Symbolic Execution", algorithms::scheduling::ASAPScheduling}));
+
+ADD_TRANSFORMATION(So4Scheduling,
+transformation_t({ "So4Scheduling" , "Symbolic Execution with TDMA", algorithms::scheduling::So4Scheduling}));
 
 // Throughput techniques
 ADD_TRANSFORMATION(BufferlessNoCScheduling,

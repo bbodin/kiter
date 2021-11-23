@@ -29,22 +29,22 @@ static inline const std::string PRED_ROW_STR (const std::string buffername, cons
 }
 
 
-void algorithms::scheduling::bufferlessKPeriodicScheduling (models::Dataflow* const  dataflow, parameters_list_t param_list) {
+void algorithms::scheduling::bufferlessKPeriodicScheduling (models::Dataflow* const dataflow, parameters_list_t param_list) {
 
 	 bool stop_at_first = (param_list.find("stop_at_first") != param_list.end());
 	 bool get_previous = (param_list.find("get_previous") != param_list.end());;
 	 bool do_linear = (param_list.find("do_linear") != param_list.end());;
 	 bool do_old = (param_list.find("do_old") != param_list.end());;
 
-	VERBOSE_INFO(  " stop_at_first=" << stop_at_first << " get_previous=" << get_previous);
+	VERBOSE_INFO(  " stop_at_first =" << stop_at_first << " get_previous =" << get_previous);
 
 	if (do_linear) return;
 	if (do_old) {
-		 algorithms::compute_Kperiodic_throughput    (dataflow,   param_list  );
+		 algorithms::compute_Kperiodic_throughput (dataflow, param_list);
 		 return;
 	}
 
-	scheduling_t sched = algorithms::scheduling::bufferless_kperiodic_scheduling (dataflow,  stop_at_first,  get_previous) ;
+	scheduling_t sched = algorithms::scheduling::bufferless_kperiodic_scheduling (dataflow, stop_at_first, get_previous);
 
 }
 
@@ -139,11 +139,9 @@ scheduling_t algorithms::scheduling::bufferless_kperiodic_scheduling (models::Da
 
     return sheduling_result;
 
-
 }
 
-scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* const  dataflow, std::map<Vertex,EXEC_COUNT> &  kvector ) {
-
+scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* const dataflow, std::map<Vertex,EXEC_COUNT> &  kvector ) {
 
     commons::ValueKind CONTINUE_OR_INTEGER = commons::KIND_CONTINUE;
 
@@ -183,10 +181,8 @@ scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* co
     }}
 
 
-
     // Reetrancy Constraints
     //******************************************************************
-
 
     {ForEachVertex(dataflow,t) {
         std::string name = dataflow->getVertexName(t);
@@ -224,7 +220,6 @@ scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* co
     }}
 
 
-
     // Communication Constraints
     //******************************************************************
 
@@ -260,7 +255,7 @@ scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* co
 		cwai   = 0;
 		cwaim1 = 0;
 
-		for(EXEC_COUNT ai = 1; ai <= dataflow->getPhasesQuantity(source) ; ai++) {
+		for (EXEC_COUNT ai = 1; ai <= dataflow->getPhasesQuantity(source) ; ai++) {
 			for(EXEC_COUNT ki = 1; ki <= kvector[source] ; ki++) {
 	            int saicolid = g.getColumn(START_COL_STR(sourceStr,ai,ki)) ;
 
@@ -275,7 +270,7 @@ scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* co
 			craj   = 0;
 			crajm1 = 0;
 
-			for(EXEC_COUNT  aj = 1; aj <= dataflow->getPhasesQuantity(target) ; aj++) {
+			for (EXEC_COUNT  aj = 1; aj <= dataflow->getPhasesQuantity(target) ; aj++) {
 				for(EXEC_COUNT kj = 1; kj <= kvector[target] ; kj++) {
 		            int sajcolid = g.getColumn(START_COL_STR(targetStr,aj,kj)) ;
 
@@ -317,7 +312,8 @@ scheduling_t algorithms::scheduling::bufferless_scheduling (models::Dataflow* co
 			cwaim1 = cwai;
 		}
 		}
-    }}
+    }
+}
 
 
 
@@ -470,8 +466,6 @@ void algorithms::scheduling::sdf_bufferless_scheduling (models::Dataflow* const 
 
 
     }
-
-
 
 
 

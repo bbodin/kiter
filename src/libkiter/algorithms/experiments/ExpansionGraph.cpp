@@ -26,7 +26,6 @@
 
 
 
-
 std::string ExpansionGraph::toDOT () {return this->eg->printDOT();}
 
 void ExpansionGraph::generate_E1_Edges(models::Dataflow * const dataflow , EXEC_COUNT ki,  models::EventGraph* g , Vertex t  ) {
@@ -36,8 +35,7 @@ void ExpansionGraph::generate_E1_Edges(models::Dataflow * const dataflow , EXEC_
 	VERBOSE_DEBUG("generate E1 edges for task " <<  dataflow->getVertexId(t) << " with ki=" << ki);
 
 
-
-	for  (EXEC_COUNT source_ki = 1, target_ki = 2; target_ki <= ki; source_ki++, target_ki++) {
+	for (EXEC_COUNT source_ki = 1, target_ki = 2; target_ki <= ki; source_ki++, target_ki++) {
 
 		models::EventGraphVertex source_event = g->getEventGraphVertex(task_id,source_ki);
 		models::EventGraphVertex target_event = g->getEventGraphVertex(task_id,target_ki);

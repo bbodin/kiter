@@ -35,7 +35,7 @@
 #include <algorithms/mapping/bufferless_utils/GraphMapper.h>
 
 
-	static NoCGraph * createNoCGraph (const NoC * noc) {
+static NoCGraph * createNoCGraph (const NoC * noc) {
 
 		NoCGraph* g = new NoCGraph(noc->size()*2);
 		for (auto edge : noc->getEdges()) {
@@ -44,7 +44,8 @@
 		return g;
 	}
 
-	static std::vector<ARRAY_INDEX> generate_task_order(const models::Dataflow* const  from) {
+
+static std::vector<ARRAY_INDEX> generate_task_order (const models::Dataflow* const  from) {
 
 	// TODO : this function only works for SDF Graph not CSDF
 
@@ -108,8 +109,7 @@
 }
 
 
-
-	static void updateNetworkOnChipModel (models::Dataflow* const  dataflow, int meshsize) {
+static void updateNetworkOnChipModel (models::Dataflow* const  dataflow, int meshsize) {
 
 	// #### Generate NoC
 	int mesh_row = (int)ceil(sqrt((double) dataflow->getVerticesCount()));
@@ -122,7 +122,7 @@
 
 }
 
-void DFSUtil_PgmOrder(Vertex v, std::vector<bool>& visited, models::Dataflow* to, std::vector<ARRAY_INDEX>& removeEdgeId, const std::vector< std::vector<unsigned int> > &cyclen_per_vtxid)
+void DFSUtil_PgmOrder (Vertex v, std::vector<bool>& visited, models::Dataflow* to, std::vector<ARRAY_INDEX>& removeEdgeId, const std::vector< std::vector<unsigned int> > &cyclen_per_vtxid)
 {
 	// Mark the current node as visited and print it
 	auto myid = to->getVertexId(v);
@@ -142,7 +142,7 @@ void DFSUtil_PgmOrder(Vertex v, std::vector<bool>& visited, models::Dataflow* to
 
 
 //Remove the cyclic edges
-static Vertex removeCycleEdges(models::Dataflow* to, const std::vector<ARRAY_INDEX>& prog_order, const std::vector< std::vector<unsigned int> > &cyclen_per_vtxid) {
+static Vertex removeCycleEdges (models::Dataflow* to, const std::vector<ARRAY_INDEX>& prog_order, const std::vector< std::vector<unsigned int> > &cyclen_per_vtxid) {
 	ARRAY_INDEX origV = to->getVerticesCount();
 	std::vector<bool> visited(origV, false);
 	std::vector<ARRAY_INDEX> removeEdgeId;
@@ -181,7 +181,7 @@ static Vertex removeCycleEdges(models::Dataflow* to, const std::vector<ARRAY_IND
 	to->setVertexName(start, "start");
 
 	//add edges between start node and isolated edges
-	for(int i = 0; i < (int)vertexId.size(); i++)
+	for (int i = 0; i < (int)vertexId.size(); i++)
 	{
 		auto t = to->getVertexById( vertexId[i]);
 		auto ne = to->addEdge(start, t);
@@ -194,8 +194,6 @@ static Vertex removeCycleEdges(models::Dataflow* to, const std::vector<ARRAY_IND
 static std::map<int, route_t> graphProcessing(const models::Dataflow* const dataflow,  NoCGraph * noc) {
 
 	VERBOSE_INFO("Starting graphProcessing.");
-
-
 
 	models::Dataflow* to = new models::Dataflow(*dataflow);
 

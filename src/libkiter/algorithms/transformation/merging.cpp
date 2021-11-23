@@ -47,9 +47,7 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 	TIME_UNIT omega = scheduling_res->getGraphPeriod();
 	VERBOSE_ASSERT(omega != std::numeric_limits<TIME_UNIT>::infinity(), "Infinite period, this dataflow does not schedule, thus I cannot merge anymore.");
 
-
 	auto persched = scheduling_res->getTaskSchedule();
-
 
 	// step two, we find the maximum time to reach by init phases
 	TIME_UNIT max_start = 0;
@@ -65,8 +63,6 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 		EXEC_COUNT ni = to->getNi(vi);
 		gcd_value = std::gcd (gcd_value , ni) ;
 	}
-
-
 
 
 	//step two , we produce the init phases for each task
@@ -93,7 +89,6 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 			current_start_index++;
 			current_start_time = starts[current_start_index % starts.size()]  + (current_start_index / starts.size() ) * period;
 		}
-
 	}
 
 	std::sort(init_start_times.begin(), init_start_times.end());
@@ -104,8 +99,6 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 
 	std::vector<TIME_UNIT> phaseDurVec(periodic_start_times.size(), 0); //Create the phase duration
 	std::vector<TIME_UNIT> InitPhaseDurVec(init_start_times.size(), 0); //Create the phase duration
-
-
 
 
 	// TODO : set durations!!!!
@@ -140,7 +133,7 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 
 	//4. Remove the edges before/after the config node. Setup the flow. Remove the router nodes.
 
-	for(ARRAY_INDEX vid :mergeNodes)
+	for (ARRAY_INDEX vid : mergeNodes)
 	{
 		Vertex cfgVtx = to->getVertexById(vid);
 		Vertex v1;
@@ -166,7 +159,6 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 		to->setEdgeOutPhases(new_edge, myout);
 	}
 
-
 	for(ARRAY_INDEX vid :mergeNodes)
 	{
 		Vertex cfgVtx = to->getVertexById(vid);
@@ -174,7 +166,6 @@ bool algorithms::transformation::basic_mergeCSDFFromSchedule(models::Dataflow* t
 	}
 
 	return true;
-
 }
 
 struct vertex_infos {
@@ -217,7 +208,6 @@ struct edge_infos {
 
 	EDGE_TYPE type;
 
-
 	edge_infos (models::Dataflow* to, Edge e) :
 		id (to->getEdgeId(e)),
 		name (to->getEdgeName(e)),
@@ -231,7 +221,6 @@ struct edge_infos {
 		type(to->getEdgeType(e)) {
 
 	}
-
 };
 
 
@@ -242,7 +231,7 @@ struct edge_infos {
  * @param n         size of output vector
  * @return          sequence of the n first values
  */
-std::vector<TOKEN_UNIT> produce_sequence (const std::vector<TOKEN_UNIT>& init , const std::vector<TOKEN_UNIT>& periodic, size_t n) {
+std::vector<TOKEN_UNIT> produce_sequence (const std::vector<TOKEN_UNIT>& init, const std::vector<TOKEN_UNIT>& periodic, size_t n) {
 
 	// Check input
 	VERBOSE_ASSERT((init.size() + periodic.size()) <= n, "Invalid input");
@@ -297,10 +286,10 @@ inline bool operator==(const task_execution_t& lhs, const task_execution_t& rhs)
 
 inline std::ostream& operator<< (std::ostream &out,const task_execution_t& e)		{out << "(id:" << e.task_id << ", it:" << e.task_iteration << ", start:" << e.starting_time << ")"; return out;}
 
-bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std::string name , const std::vector< ARRAY_INDEX >& mergeNodes, const models::Scheduling* scheduling_res) {
+bool algorithms::transformation::mergeCSDFFromSchedule (models::Dataflow* to, std::string name, const std::vector< ARRAY_INDEX >& mergeNodes, const models::Scheduling* scheduling_res) {
 
 	VERBOSE_INFO("Start mergeCSDFFromSchedule");
-
+	VERBOSE_ASSERT(computeRepetitionVector(to),"Merge operator requires graph to be consistent.");
 
 	// Check tasks
 	// we assume there is no init phases to merge
@@ -309,14 +298,12 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 		VERBOSE_ASSERT(to->getInitPhasesQuantity(v) == 0, "Unsupported case");
 	}
 
-
 	// Check the scheduling is correct
 	VERBOSE_INFO("Check Scheduling");
 	TIME_UNIT omega = scheduling_res->getGraphPeriod();
 	VERBOSE_ASSERT(omega != std::numeric_limits<TIME_UNIT>::infinity(), "Infinite period, this dataflow does not schedule, thus I cannot merge anymore.");
 	VERBOSE_INFO("omega = " << omega);
 	auto persched = scheduling_res->getTaskSchedule();
-
 
 	// For each edge we need to store , input vector, output vector, initial marking, gcd
 	VERBOSE_INFO("Store what to merge");
@@ -347,9 +334,6 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 	}
 
 
-
-
-
 	VERBOSE_DEBUG("Check what is stored");
 	VERBOSE_DEBUG("gcd_value = " << gcd_value);
 	for (auto it : original_tasks) {
@@ -362,8 +346,6 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 		VERBOSE_DEBUG("  - periodic starts: " << commons::toString(std::vector<TIME_UNIT>(infos.starts.begin() + infos.init_phases, infos.starts.end())));
 	}
 
-
-
 	VERBOSE_INFO("Delete original tasks");
 
 	to->reset_computation();
@@ -373,15 +355,12 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 		to->removeVertex(cfgVtx);
 	}
 
-
 	VERBOSE_INFO("Schedule original tasks");
-
 
 	std::map<ARRAY_INDEX,EXEC_COUNT> execution_count;
 	for (auto it : original_tasks) {
 		execution_count[it.first] = 0;
 	}
-
 
 
 	std::vector < task_execution_t > execution_sequence;
@@ -405,17 +384,14 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 			}
 		}
 
-
 		// Execute candidate
 		execution_sequence.push_back(  task_execution_t(next_id, execution_count[next_id], next_time) );
 		execution_count[next_id] ++ ;
-
 
 		// Stopping condition
 		// NOTE: In theory a valid one should be similar to Symbolic Execution (reach previously seen state)
 		//       I did not implement that yet, it will have to be done until a better solution emerge.
 		//       Currently the solution used is not bullet proof!
-
 
 		for (auto it : original_tasks) {
 			ARRAY_INDEX vid = it.first;
@@ -427,13 +403,9 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 				break;
 			}
 		}
-
-
 	}
 
 	VERBOSE_DEBUG("End of scheduling with " << commons::toString(execution_sequence));
-
-
 
 	for (auto it : original_tasks) {
 		ARRAY_INDEX vid = it.first;
@@ -501,12 +473,9 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 		if (need_to_continue) {
 			init_phase_count--;
 		}
-
 	}
 
-
 	VERBOSE_ASSERT(init_phase_count >= 0 , "Problem detected.");
-
 
 	// Optimising when we can to reduce the init phase
 	VERBOSE_INFO("Check if we can reduce the inint phase");
@@ -576,6 +545,7 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 
 		}
 	}
+
 	VERBOSE_INFO("Produce the output edge rates");
 	for (auto it : output_edges) {
 		for (edge_infos infos : it.second) {
@@ -601,15 +571,12 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 		}
 	}
 
-
 	std::vector<TIME_UNIT> init_duration_vec;
 	std::vector<TIME_UNIT> periodic_duration_vec;
 
 	VERBOSE_INFO("  - Gather init timings and phases ");
 
-
 	for (auto exec_pair : execution_sequence) {
-
 
 		ARRAY_INDEX tid  = exec_pair.task_id;
 		EXEC_COUNT  phase = exec_pair.task_iteration;
@@ -624,10 +591,7 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 		} else {
 			periodic_duration_vec.push_back(execution_time);
 		}
-
 	}
-
-
 
 	VERBOSE_INFO("Add the merge task");
 
@@ -658,7 +622,6 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 				VERBOSE_DEBUG("  skip internal edge");
 				continue;
 			}
-
 
 			auto new_edge = to->addEdge(to->getVertexById(infos.src_id), middle, infos.id , infos.name);
 			//to->setEdgeName(new_edge, "merged_" + commons::toString(to->getEdgeId(new_edge)));
@@ -716,32 +679,18 @@ bool algorithms::transformation::mergeCSDFFromSchedule(models::Dataflow* to, std
 			std::vector<TOKEN_UNIT> init_in (computed_rates.begin(), computed_rates.begin() + init_phase_count) ;
 			std::vector<TOKEN_UNIT> per_in (computed_rates.begin() + init_phase_count, computed_rates.end()) ;
 
-
-
-
 			VERBOSE_DEBUG("    - computed_rates = " << commons::toString(computed_rates));
 			VERBOSE_DEBUG("    - init_in = " << commons::toString(init_in));
 			VERBOSE_DEBUG("    - per_in = " << commons::toString(per_in));
-
-
-
-
 
 			to->setEdgeInPhases(new_edge, per_in);
 			to->setEdgeInInitPhases(new_edge, init_in);
 		}
 
 	}
-
-
+	to->reset_computation();
 	return true;
-
-
-
 }
-
-
-
 
 
 void algorithms::transformation::merge_tasks    (models::Dataflow* const dataflow, parameters_list_t  parameters  ) {
@@ -764,5 +713,4 @@ void algorithms::transformation::merge_tasks    (models::Dataflow* const dataflo
 
 
 	VERBOSE_ASSERT(algorithms::transformation::mergeCSDFFromKperiodicSchedule(dataflow,new_name, task_ids), "mergeCSDFFromKperiodicSchedule return error.");
-
 }

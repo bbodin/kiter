@@ -40,8 +40,7 @@ void print_packet_line (ARRAY_INDEX src, ARRAY_INDEX dst, TIME_UNIT duration, AR
 
 
 
-void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph, parameters_list_t param_list) {
-
+void algorithms::symbolic_execution_with_packets (models::Dataflow* const graph, parameters_list_t param_list) {
 
 	// We need the repetition vector to proceed.
 	VERBOSE_ASSERT(graph->is_consistent(),"inconsistent graph");
@@ -49,8 +48,6 @@ void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph,
 	  {ForEachVertex(graph,t) {
 	  	  VERBOSE_ASSERT(graph->getPhasesQuantity(t) == 1, "Support only SDF");
 	  }}
-
-
 
 	// psize is the number of byte per packet to be send.
 	bool do_ack = 0;
@@ -62,7 +59,6 @@ void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph,
 		VERBOSE_WARNING("The 'ack' parameter has not been provided, packet has no acknowledgment.");
 	}
 	VERBOSE_INFO("acknowledgment = " << do_ack);
-
 
 	// psize is the number of byte per packet to be send.
 	EXEC_COUNT psize = 0;
@@ -86,7 +82,6 @@ void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph,
 	}
 	VERBOSE_INFO("packets iteration count = " << iteration_count);
 
-
 	// We store the total number of execution, the number of execution per task id
 	EXEC_COUNT total = 0 ;
 	std::vector < EXEC_COUNT >  remained_execution (graph->getMaxVertexId());
@@ -107,20 +102,16 @@ void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph,
 	std::cout << "4,4,1" << std::endl;
 	std::cout << "#SRC,DEST,DURATION,PACKET_ID,BANK_ID,DEP1,DEP2,..." << std::endl;
 
-
     VERBOSE_INFO("Start of symbolic execution.");
     VERBOSE_INFO("Packet size is " << psize);
 	// Loop over to execute everyone. Unoptimized, could be much faster if tasks were stacked, and sum of dependences stored.
     // This does not model timings, useless for throughput
 
-
 	std::map < Edge , ARRAY_INDEX > packet_ids;
 	std::map < Vertex , ARRAY_INDEX > last_compute_time;
 	ARRAY_INDEX packet_count = 0;
 
-
 	while (total > 0) {
-
 
 		for (Vertex t : graph->vertices()) {
 
@@ -172,12 +163,10 @@ void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph,
 						ARRAY_INDEX dst = graph->getVertexId(graph->getEdgeTarget(outE));
 
 
-
 						TOKEN_UNIT datatotransfert = graph->getEdgeIn(outE);
 						if (psize == 0) psize = datatotransfert;
 
 						VERBOSE_DEBUG(" - Produce " << datatotransfert << " by packet of " << psize);
-
 
 
 						ARRAY_INDEX previous = compute_pid;
@@ -198,15 +187,13 @@ void algorithms::symbolic_execution_with_packets(models::Dataflow* const  graph,
 
 		}
 
-
 	}
 
     VERBOSE_INFO("End of symbolic execution.");
 
-
 }
 
-bool algorithms::symbolic_execution(models::Dataflow* const  from) {
+bool algorithms::symbolic_execution (models::Dataflow* const from) {
 
 	// Need RV.
 	VERBOSE_ASSERT(from->is_consistent(),"inconsistent graph");
@@ -269,20 +256,12 @@ bool algorithms::symbolic_execution(models::Dataflow* const  from) {
 
     return total == 0;
 }
-void algorithms::symbolic_execution(models::Dataflow* const  from, parameters_list_t ) {
+
+void algorithms::symbolic_execution (models::Dataflow* const from, parameters_list_t ) {
 
 	bool res = algorithms::symbolic_execution(from);
 
 	VERBOSE_ASSERT(res, "Symbolic execution failed.");
 }
-
-
-
-
-
-
-
-
-
 
 

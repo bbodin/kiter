@@ -31,8 +31,14 @@ typedef std::map< ARRAY_INDEX, unsigned int> vid_to_nocEid;
 //add intermediate nodes based on the path between them
 static std::vector<Vertex> addPathNode(models::Dataflow* d, Edge c, route_t list, conflictEtype& returnValue, conflictConfigs& configs, vid_to_nocEid& vid_to_conflict_map, bool addConfigNode)
 {
-	d->reset_computation();
 	std::vector<Vertex> new_vertices;
+
+	if (list.size() == 0 and d->getEdgeType(c) == EDGE_TYPE::VIRTUAL_EDGE) {
+
+		return new_vertices;
+	}
+
+	d->reset_computation();
 	// We store infos about edge to be deleted
 	auto source_vtx = d->getEdgeSource(c);
 	auto target_vtx = d->getEdgeTarget(c);
@@ -50,11 +56,9 @@ static std::vector<Vertex> addPathNode(models::Dataflow* d, Edge c, route_t list
 		return new_vertices;
 	}
 
-
 	bool flag = true;
 	ARRAY_INDEX original_edge_id = d->getEdgeId(c);
 	d->removeEdge(c); //we delete the edge
-
 
 	std::string key_str = "";
 
@@ -130,9 +134,7 @@ static std::vector<Vertex> addPathNode(models::Dataflow* d, Edge c, route_t list
 			//configs[config_key.str()].push_back(tuple_temp);
 			configs[config_key.str()].push_back(d->getVertexId(vtx));
 
-
 			key_str = config_key.str();
-
 
 			d->setVertexName(vtx,config_name.str());
 			d->setPhasesQuantity(vtx,1); // number of state for the actor, only one in SDF
@@ -234,8 +236,8 @@ static std::vector<std::set<ARRAY_INDEX>> get_overlaps (models::Dataflow* const 
 		}
 
 	return res;
-
 }
+
 
 
 void algorithms::ModelNoCConflictFreeCommunication(models::Dataflow* const  dataflow, parameters_list_t   param_list ) {
@@ -298,7 +300,6 @@ void algorithms::ModelNoCConflictFreeCommunication(models::Dataflow* const  data
 
 		VERBOSE_INFO ("  - " << item.first << ":"  << item.second);
 	}
-
-
+	dataflow->reset_computation();
 }
 

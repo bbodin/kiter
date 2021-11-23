@@ -45,7 +45,7 @@ void algorithms::compute_csdf_1periodic_memory   (models::Dataflow* const  dataf
 
 	  /// END $$$$$$$$$$$$$$$ This part compute a period if none provided
 
-	BufferSizingResult sizing_res = periodic_memory_sizing_csdf( dataflow, period, solve_ilp, gen_only);
+	BufferSizingResult sizing_res = periodic_memory_sizing_csdf (dataflow, period, solve_ilp, gen_only);
 	if (sizing_res.is_valid()) {
 		std::cout << "Total buffer size : " << sizing_res.total_size()
 				  << " + 2 * " << dataflow->getVerticesCount() << " = "
@@ -55,6 +55,7 @@ void algorithms::compute_csdf_1periodic_memory   (models::Dataflow* const  dataf
 		std::cout << "No solution" << std::endl;
 	}
 }
+
 BufferSizingResult algorithms::periodic_memory_sizing_csdf   (models::Dataflow* const  dataflow, TIME_UNIT PERIOD, bool ilp_solving, bool gen_only) {
 
 	commons::ValueKind CONTINUE_OR_INTEGER = commons::KIND_CONTINUE;
@@ -86,9 +87,6 @@ BufferSizingResult algorithms::periodic_memory_sizing_csdf   (models::Dataflow* 
 			g.addColumn("s_" + commons::toString<EXEC_COUNT>(a) + "_" + name,commons::KIND_CONTINUE,commons::bound_s(commons::LOW_BOUND,0),0);
 		}
 	}}
-
-
-
 
 
 

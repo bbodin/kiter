@@ -51,6 +51,69 @@ BOOST_AUTO_TEST_CASE( test_MinCycleRatio )
 
 }
 
+BOOST_AUTO_TEST_CASE( test_scheduling_simple_buffer_dataflow )
+{
+    models::Dataflow* g = new models::Dataflow(0);
+
+    auto v1 = g->addVertex("one");
+    g->setPhasesQuantity(v1,1);
+    g->setVertexDuration(v1,{1});
+
+    auto v2 = g->addVertex("two");
+    g->setPhasesQuantity(v2,1);
+    g->setVertexDuration(v2,{1});
+
+    auto e1 = g->addEdge(v1,v2,"a");
+    g->setEdgeInPhases(e1,{1});
+    g->setEdgeOutPhases(e1,{1});
+
+    g->setReentrancyFactor(v1,1);
+
+	VERBOSE_ASSERT(computeRepetitionVector(g),"Cannot generate repetition vector.");
+	models::Scheduling res2 = algorithms::scheduling::CSDF_SPeriodicScheduling (g);
+    BOOST_REQUIRE_EQUAL( res2.getGraphPeriod(), 1 );
+
+    delete g;
+
+}
+
+BOOST_AUTO_TEST_CASE( test_scheduling_varied_duration_time_buffer_dataflow )
+{
+    models::Dataflow* g = new models::Dataflow(0);
+
+    auto v1 = g->addVertex("one");
+    g->setPhasesQuantity(v1,2);
+    g->setVertexDuration(v1,{1,2});
+
+    auto v2 = g->addVertex("two");
+    g->setPhasesQuantity(v2,1);
+    g->setVertexDuration(v2,{1});
+
+    auto e1 = g->addEdge(v1,v2,"a");
+    g->setEdgeInPhases(e1,{1,1});
+    g->setEdgeOutPhases(e1,{1});
+
+    g->setReentrancyFactor(v1,1);
+
+	VERBOSE_ASSERT(computeRepetitionVector(g),"Cannot generate repetition vector.");
+	models::Scheduling res = algorithms::scheduling::CSDF_SPeriodicScheduling (g);
+
+    BOOST_REQUIRE_EQUAL( res.getGraphPeriod(), 4);
+
+	g->reset_computation();
+    g->setReentrancyFactor(v1,1);
+
+	VERBOSE_ASSERT(computeRepetitionVector(g),"Cannot generate repetition vector.");
+	models::Scheduling res2 = algorithms::scheduling::CSDF_KPeriodicScheduling_LP (g, algorithms::scheduling::generate1PeriodicVector(g));
+
+    BOOST_REQUIRE_NE( res.getGraphPeriod(), res2.getGraphPeriod());
+	
+
+    delete g;
+
+}
+
+
 
 BOOST_AUTO_TEST_CASE( test_SPeriodicTask )
 {

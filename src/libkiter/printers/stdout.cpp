@@ -112,13 +112,18 @@ std::string printers::PeriodicScheduling2DOT    (models::Dataflow* const  datafl
   return returnStream.str();
 
 }
-
 void  printers::printGraphAsKiterScript (models::Dataflow* const  dataflow, parameters_list_t params) {
+
+	  bool verbose = params.count("verbose");
+
+	  std::cout << generate_kiter(dataflow, verbose);
+}
+
+std::string  printers::generate_kiter (const models::Dataflow* const  dataflow, bool verbose) {
 
 
 	  std::ostringstream returnStream;
 
-	  bool verbose = params.count("verbose");
 
 	  returnStream << "// Auto-generate by Kiter for Kiter" << std::endl;
 	  returnStream << "// " << std::endl;
@@ -240,7 +245,7 @@ void  printers::printGraphAsKiterScript (models::Dataflow* const  dataflow, para
 	    }}
 	  returnStream << std::endl;
 	  returnStream << "}"   << std::endl;
-	  std::cout << returnStream.str();
+	  return returnStream.str();
 
 }
 

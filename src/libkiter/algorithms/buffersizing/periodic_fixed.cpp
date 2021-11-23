@@ -17,471 +17,478 @@
 #include "periodic_fixed.h"
 
 
-    void algorithms::checkOffsets (models::Dataflow * const dataflow,TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & offsets) {
+void algorithms::checkOffsets (models::Dataflow * const dataflow,TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & offsets) {
 
-              VERBOSE_ASSERT(OMEGA > 0 , "unsuable period.");
+            VERBOSE_ASSERT(OMEGA > 0 , "unsuable period.");
 
-        {ForEachVertex(dataflow,pTask) {
-            EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
+    {ForEachVertex(dataflow,pTask) {
+        EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
 
-        	VERBOSE_ASSERT (offsets.count(pTask)  == 1, "Task has no offset") ;
-        	VERBOSE_ASSERT_EQUALS (offsets[pTask].size()  , max_k) ;
+        VERBOSE_ASSERT (offsets.count(pTask)  == 1, "Task has no offset") ;
+        VERBOSE_ASSERT_EQUALS (offsets[pTask].size()  , max_k) ;
 
-            for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
+        for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
 
-                if (offsets[pTask][(int)(k-1)] < 0) {
-                    VERBOSE_ERROR("Bad offset, Task = " << dataflow->getVertexName(pTask) << " k=" << k << " Value is " << offsets[pTask][(int)(k-1)]  );
-                 }
-                VERBOSE_ASSERT_GreaterEqualThan(offsets[pTask][(int)(k-1)] , 0);
+            if (offsets[pTask][(int)(k-1)] < 0) {
+                VERBOSE_ERROR("Bad offset, Task = " << dataflow->getVertexName(pTask) << " k=" << k << " Value is " << offsets[pTask][(int)(k-1)]  );
+                }
+            VERBOSE_ASSERT_GreaterEqualThan(offsets[pTask][(int)(k-1)] , 0);
 
-              if (k>1) {
-                  if (offsets[pTask][(int)(k-1)] < (offsets[pTask][(int)(k-2)] + dataflow->getVertexDuration(pTask,k-1))) {
-                      VERBOSE_ERROR("Bad offset, Task = " << dataflow->getVertexName(pTask) << " s(" << k << ")=" << offsets[pTask][(int)(k-1)]  << " s(" << k-1 << ")=" << offsets[pTask][(int)(k-2)]  << " l(" << k-1 << ")=" << dataflow->getVertexDuration(pTask,k-1) << " s(" << k-1 << ") + l(" << k-1  << ")="  << offsets[pTask][(int)(k-2)] + dataflow->getVertexDuration(pTask,k-1) );
-                                  }
-               //   VERBOSE_ASSERT(offsets[pTask][(int)(k-1)] >= (offsets[pTask][(int)(k-2)] + dataflow->getVertexDuration(pTask,k-1)), "negative offset !");
+            if (k>1) {
+                if (offsets[pTask][(int)(k-1)] < (offsets[pTask][(int)(k-2)] + dataflow->getVertexDuration(pTask,k-1))) {
+                    VERBOSE_ERROR("Bad offset, Task = " << dataflow->getVertexName(pTask) << " s(" << k << ")=" << offsets[pTask][(int)(k-1)]  << " s(" << k-1 << ")=" << offsets[pTask][(int)(k-2)]  << " l(" << k-1 << ")=" << dataflow->getVertexDuration(pTask,k-1) << " s(" << k-1 << ") + l(" << k-1  << ")="  << offsets[pTask][(int)(k-2)] + dataflow->getVertexDuration(pTask,k-1) );
+                                }
+            //   VERBOSE_ASSERT(offsets[pTask][(int)(k-1)] >= (offsets[pTask][(int)(k-2)] + dataflow->getVertexDuration(pTask,k-1)), "negative offset !");
 
-              }
-               TIME_UNIT mut = OMEGA  * dataflow->getPhasesQuantity(pTask) / dataflow->getNi(pTask);
-
-               if ((offsets[pTask][(int)(k-1)] + dataflow->getVertexDuration(pTask,k)) > (mut)) {
-                   VERBOSE_ERROR("mut = " << mut << " end of pases is " << offsets[pTask][(int)(k-1)] + dataflow->getVertexDuration(pTask,k));
-               }
-               //VERBOSE_ASSERT((offsets[pTask][(int)(k-1)] + dataflow->getVertexDuration(pTask,k)) <= mut, "negative offset !");
             }
-        }}
+            TIME_UNIT mut = OMEGA  * dataflow->getPhasesQuantity(pTask) / dataflow->getNi(pTask);
+
+            if ((offsets[pTask][(int)(k-1)] + dataflow->getVertexDuration(pTask,k)) > (mut)) {
+                VERBOSE_ERROR("mut = " << mut << " end of pases is " << offsets[pTask][(int)(k-1)] + dataflow->getVertexDuration(pTask,k));
+            }
+            //VERBOSE_ASSERT((offsets[pTask][(int)(k-1)] + dataflow->getVertexDuration(pTask,k)) <= mut, "negative offset !");
+        }
+    }}
 
 
+}
+
+BufferSizingResult algorithms::speriodic_memory_sizing_csdf (models::Dataflow* const  dataflow, TIME_UNIT period, bool solve_ilp, bool gen_only) {
+    std::map<Vertex,std::vector<TIME_UNIT> > offsets;
+
+    VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+
+    VERBOSE_ASSERT (period > 0, "The period must be defined");
+    VERBOSE_ASSERT (period != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
+
+    if (generateStrictlyPeriodicOffsets(dataflow,period,offsets)) {
+        checkOffsets(dataflow,period,offsets);
+        return compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only);
+    } else {
+        return BufferSizingResult();
     }
+}
 
-    BufferSizingResult algorithms::speriodic_memory_sizing_csdf   (models::Dataflow* const  dataflow, TIME_UNIT period, bool solve_ilp, bool gen_only) {
-    	 std::map<Vertex,std::vector<TIME_UNIT> > offsets;
+void algorithms::compute_strictly_periodic_memory (models::Dataflow* const dataflow, parameters_list_t params) {
+        std::map<Vertex,std::vector<TIME_UNIT> > offsets;
 
-    	 VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-
-    	 VERBOSE_ASSERT (period > 0, "The period must be defined");
-    	 VERBOSE_ASSERT (period != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
-
-    	 if (generateStrictlyPeriodicOffsets(dataflow,period,offsets)) {
-    		 checkOffsets(dataflow,period,offsets);
-    		 return compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only);
-    	 } else {
-    		 return BufferSizingResult();
-    	 }
-    }
-
-    void algorithms::compute_strictly_periodic_memory                                   (models::Dataflow* const  dataflow, parameters_list_t params) {
-    	  std::map<Vertex,std::vector<TIME_UNIT> > offsets;
-
-    	  VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+        VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
 
 
-    	  TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
-    	  bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
-    	  bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
+        TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
+        bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
+        bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
 
-    	  /// BEGIN $$$$$$$$$$$$$$$ This part compute a period if none provided
-    	  std::map<Vertex,EXEC_COUNT> kvector = algorithms::scheduling::generate1PeriodicVector(dataflow);
+        /// BEGIN $$$$$$$$$$$$$$$ This part computes a period if none provided
+        std::map<Vertex,EXEC_COUNT> kvector = algorithms::scheduling::generate1PeriodicVector(dataflow);
 
-    	  	kperiodic_result_t result = algorithms::KSchedule(dataflow,&kvector);
+        kperiodic_result_t result = algorithms::KSchedule(dataflow,&kvector);
 
-    	  	TIME_UNIT MIN_PERIOD = 1 / result.throughput;
+        TIME_UNIT MIN_PERIOD = 1 / result.throughput;
 
-    	  	if (MIN_PERIOD) {
-    	  	   	VERBOSE_ASSERT (MIN_PERIOD <= period, "The period must be possible");
-    	  	   	if (period == 0) {
-    	  	   	period = MIN_PERIOD;
-    	  	   		VERBOSE_WARNING("PERIOD set to " << period);
-    	  	   	}
-    	  	} else {
-    	  		VERBOSE_ERROR ("Cannot compute the maximum period...");
-    	  	}
-
-      	  /// END $$$$$$$$$$$$$$$ This part compute a period if none provided
-
-
-    	  	VERBOSE_ASSERT (period > 0, "The period must be defined");
-    	  	VERBOSE_ASSERT (period != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
-
-    	  generateStrictlyPeriodicOffsets(dataflow,period,offsets);
-    	  checkOffsets(dataflow,period,offsets);
-    	  auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
-    	  std::cout << "Total buffer size : " << total_buffer_size
-    	               << " + 2 * " << dataflow->getVerticesCount() << " = "
-    	               << total_buffer_size + 2 * dataflow->getVerticesCount() << std::endl ;
-    	  	 std::cout << "SPeriodicSizing size is " << total_buffer_size << std::endl;
-    }
-
-   void algorithms::compute_burst_memory                                   (models::Dataflow* const  dataflow, parameters_list_t params) {
-	   std::map<Vertex,std::vector<TIME_UNIT> > offsets;
-       generateBurstOffsets(dataflow,offsets);
-
-       VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+        if (MIN_PERIOD) {
+            VERBOSE_ASSERT (MIN_PERIOD <= period, "The period must be possible");
+            if (period == 0) {
+            period = MIN_PERIOD;
+                VERBOSE_WARNING("PERIOD set to " << period);
+            }
+        } else {
+            VERBOSE_ERROR ("Cannot compute the maximum period...");
+        }
+        /// END $$$$$$$$$$$$$$$ This part computed a period if none was provided
 
 
-       TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
-       bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
-       bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
+        VERBOSE_ASSERT (period > 0, "The period must be defined");
+        VERBOSE_ASSERT (period != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
 
-
-       checkOffsets(dataflow,period,offsets);
-       auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
-       std::cout << "Total buffer size : " << total_buffer_size
+        generateStrictlyPeriodicOffsets(dataflow,period,offsets);
+        checkOffsets(dataflow,period,offsets);
+        auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
+        std::cout << "Total buffer size : " << total_buffer_size
                     << " + 2 * " << dataflow->getVerticesCount() << " = "
                     << total_buffer_size + 2 * dataflow->getVerticesCount() << std::endl ;
-       	 std::cout << "BurstSizing size is " << total_buffer_size << std::endl;
-   }
-   void algorithms::compute_average_memory                                   (models::Dataflow* const  dataflow, parameters_list_t params) {
+            std::cout << "SPeriodicSizing size is " << total_buffer_size << std::endl;
+}
 
-	   std::map<Vertex,std::vector<TIME_UNIT> > offsets;
+   void algorithms::add_vbuffers (models::Dataflow* const  dataflow, parameters_list_t params) {
+        std::map<Vertex,std::vector<TIME_UNIT> > offsets;
+        std::set<ARRAY_INDEX> vbuffers;
 
-	   VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+        VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+        TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ; // assumes period is available in param list
+        VERBOSE_ASSERT (period > 0, "The period must be defined");
+        VERBOSE_ASSERT (period != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
+        bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
+        bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
+        generateStrictlyPeriodicOffsets(dataflow,period,offsets);
+        checkOffsets(dataflow,period,offsets);
+        BufferSizingResult buf_res = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only);
+        dataflow->reset_computation();
 
+        std::vector<ARRAY_INDEX> id_list; // no known way of getting a static edge list
+        ForEachEdge(dataflow, e){ // for each virtual buffer, add max token, set (inversed) in and out edge phases, and record new edges in set
+            id_list.push_back(dataflow->getEdgeId(e));
+        }
+        for (auto & id : id_list){
+            Edge e = dataflow->getEdgeById(id);
+            long buf_size = buf_res.get_edge_size(dataflow->getEdgeId(e));
+            Edge v_e = dataflow->addEdge(dataflow->getEdgeTarget(e), dataflow->getEdgeSource(e), "vir_" + dataflow->getEdgeName(e) );
+            dataflow->setPreload(v_e, buf_size-dataflow->getPreload(e)); // TODO: useful tokens from preload
+            std::vector<TOKEN_UNIT> inphase;
+            for (PHASE_INDEX ip = 1; ip <= dataflow->getEdgeOutPhasesCount(e); ip++){
+                inphase.push_back(dataflow->getEdgeOutPhase(e, ip));
+            }
+            dataflow->setEdgeInPhases(v_e, inphase);
+            std::vector<TOKEN_UNIT> outphase;
+            for (PHASE_INDEX op = 1; op <= dataflow->getEdgeInPhasesCount(e); op++){
+                outphase.push_back(dataflow->getEdgeInPhase(e, op));
+            }
+            dataflow->setEdgeOutPhases(v_e, outphase);
+            dataflow->setTokenSize(v_e, dataflow->getTokenSize(e));
+            // dataflow->setEdgeName(v_e, dataflow->getEdgeName(e));
+            dataflow->setEdgeType(v_e, VIRTUAL_EDGE);
+            vbuffers.insert(dataflow->getEdgeId(v_e));
+        }
 
-	   TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
-	   bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
-	    bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
-
-
-	   generateAverageOffsets(dataflow,period,offsets);
-	   checkOffsets(dataflow,period,offsets);
-	   auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
-	   std::cout << "Total buffer size : " << total_buffer_size
-	                << " + 2 * " << dataflow->getVerticesCount() << " = "
-	                << total_buffer_size + 2 * dataflow->getVerticesCount() << std::endl ;
-	   	 std::cout << "AverageSizing size is " << total_buffer_size << std::endl;
-   }
-
-   void algorithms::compute_minmax_memory                                   (models::Dataflow* const  dataflow, parameters_list_t params) {
-       std::map<Vertex,std::vector<TIME_UNIT> > offsets;
-       VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-
-	   TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
-	   bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
-	    bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
-
-	   generateMinMaxOffsets(dataflow,period,offsets);
-       checkOffsets(dataflow,period,offsets);
-       auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
-       std::cout << "Total buffer size : " << total_buffer_size
-                    << " + 2 * " << dataflow->getVerticesCount() << " = "
-                    << total_buffer_size + 2 * dataflow->getVerticesCount() << std::endl ;
-       	 std::cout << "MinMaxSizing size is " << total_buffer_size << std::endl;
-   }
-
-   void algorithms::compute_wiggers_memory                                   (models::Dataflow* const  dataflow, parameters_list_t params) {
-       std::map<Vertex,std::vector<TIME_UNIT> > offsets;
-
-	   TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
-	   bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
-	    bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
-
-       generateWiggersOffsets(dataflow,period,offsets);
-       checkOffsets(dataflow,period,offsets);
-	   auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
-
-       std::cout << "Total buffer size : " << total_buffer_size
-               << " + 2 * " << dataflow->getVerticesCount() << " = "
-               << total_buffer_size + 2 * dataflow->getVerticesCount() << std::endl ;
-  	 std::cout << "WiggersSizing size is " << total_buffer_size << std::endl;
-
-   }
+        // return vbuffers;
+    }
 
 
-   bool algorithms::generateStrictlyPeriodicOffsets(models::Dataflow * dataflow, TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & res) {
+void algorithms::compute_fixed_offset_buffer_sizing (models::Dataflow* const dataflow, parameters_list_t params){
+    std::map<Vertex,std::vector<TIME_UNIT> > offsets;
 
-	   VERBOSE_DEBUG("generateStrictlyPeriodicOffsets");
+    VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+
+    TIME_UNIT period    = commons::get_parameter<TIME_UNIT>(params, "PERIOD", 0.0) ;
+    bool      solve_ilp = commons::get_parameter<bool>(params, "ILP", false) ;
+    bool      gen_only  = commons::get_parameter<bool>(params, "GENONLY", false) ;
+
+    std::string mem;
+    if (params.count("OFFSET")) {
+        std::string offset_type = params["OFFSET"];
+
+        if (offset_type == "BURST"){
+            mem = "Burst";
+            generateBurstOffsets(dataflow, offsets);
+        } else if (offset_type == "AVERAGE"){
+            mem = "Average";
+            generateAverageOffsets(dataflow, period, offsets);
+        } else if (offset_type == "MINMAX"){
+            mem = "MinMax";
+            generateMinMaxOffsets(dataflow, period, offsets);
+        } else if (offset_type == "WIGGERS"){
+            mem = "Wiggers";
+            generateWiggersOffsets(dataflow, period, offsets);
+        } else {
+            VERBOSE_ASSERT(false, "Invalid Schedule Paradigm Defined")
+        };
+    }
+
+    checkOffsets(dataflow,period,offsets);
+    auto total_buffer_size = compute_periodic_fixed_memory(dataflow, offsets,period, solve_ilp, gen_only).total_size();
+
+    std::cout << "Total buffer size : " << total_buffer_size
+                << " + 2 * " << dataflow->getVerticesCount() << " = "
+                << total_buffer_size + 2 * dataflow->getVerticesCount() << std::endl ;
+    std::cout << (std::string) mem << " Sizing size is " << total_buffer_size << std::endl;
+}
+
+
+bool algorithms::generateStrictlyPeriodicOffsets  (models::Dataflow * dataflow, TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & res) {
+
+    VERBOSE_DEBUG("generateStrictlyPeriodicOffsets");
 
 	   if (OMEGA == 0 ) {
 		   return false;
 	   }
 
-	   res.clear();
+    res.clear();
 
-	   VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-	   {ForEachVertex(dataflow,pTask) {
-		   EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
-		   TIME_UNIT shift = OMEGA / dataflow->getNi(pTask) ;
+    VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+    {ForEachVertex(dataflow,pTask) {
+        EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
+        TIME_UNIT shift = OMEGA / dataflow->getNi(pTask) ;
 
-		   res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
-
-
-		   VERBOSE_DEBUG("Task " << dataflow->getVertexName(pTask) << " max_k=" << max_k << " shift=" << shift);
-
-		   if (max_k == 1) {
-			   res.at(pTask).push_back(0);
-		   } else {
-			   for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
-				   TIME_UNIT newtime = (k -1) * shift;
-				   VERBOSE_DEBUG("task =" << dataflow->getVertexName(pTask) <<  " k=" << k << " offset = " << newtime);
-
-				   if ( dataflow->getVertexDuration(pTask,k)  > shift ) {
-					   VERBOSE_DEBUG(" END BECAUSE " << dataflow->getVertexDuration(pTask,k) << " <= " << shift);
-					   return false;
-				   }
-
-				   res.at(pTask).push_back(newtime);
-			   }
-		   }
-	   }}
-	   return true;
-   }
+        res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
 
 
+        VERBOSE_DEBUG("Task " << dataflow->getVertexName(pTask) << " max_k=" << max_k << " shift=" << shift);
 
-   bool algorithms::generateBurstOffsets(models::Dataflow * const dataflow,std::map<Vertex,std::vector<TIME_UNIT> > & res) {
-        //recuperer les transition
-
-
-        res.clear();
-
-        {ForEachVertex(dataflow,pTask) {
-            EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
-            res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
-            TIME_UNIT val = 0;
+        if (max_k == 1) {
+            res.at(pTask).push_back(0);
+        } else {
             for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
+                TIME_UNIT newtime = (k -1) * shift;
+                VERBOSE_DEBUG("task =" << dataflow->getVertexName(pTask) <<  " k=" << k << " offset = " << newtime);
 
-                if (k > 1) val +=  dataflow->getVertexDuration(pTask,k-1);
-                res[pTask].push_back(val);
+                if ( dataflow->getVertexDuration(pTask,k)  > shift ) {
+                    VERBOSE_DEBUG(" END BECAUSE " << dataflow->getVertexDuration(pTask,k) << " <= " << shift);
+                    return false;
+                }
 
+                res.at(pTask).push_back(newtime);
             }
-        }}
-        return true;
-    }
-
-
-   bool algorithms::generateAverageOffsets(models::Dataflow * dataflow, TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & res) {
-
-       VERBOSE_ASSERT(OMEGA > 0 , "unsuable period.");
-       res.clear();
-
-       VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-       {ForEachVertex(dataflow,pTask) {
-           EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
-           TIME_UNIT muti = OMEGA  * dataflow->getPhasesQuantity(pTask) / dataflow->getNi(pTask);
-           VERBOSE_ASSERT(muti > 0 , "unsuable period.");
-           TIME_UNIT sum = 0;
-           TIME_UNIT lti = 0;
-           for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
-                   lti += dataflow->getVertexDuration(pTask,k)  ;
-           }
-
-           res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
-
-           if (max_k == 1) {
-               res.at(pTask).push_back(0);
-           } else {
-           for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
-               if (k > 1) sum += dataflow->getVertexDuration(pTask,k-1)  ;
-
-               TIME_UNIT newtime = sum *  (muti / lti);
-               if (lti == 0) newtime = 0; // SUPERFIX
-               VERBOSE_DEBUG("task =" << dataflow->getVertexName(pTask) <<  " k=" << k << " offset = " << newtime);
-               res.at(pTask).push_back(newtime);
-           }
-           }
-       }}
-       return true;
-   }
-
-
-   bool algorithms::generateWiggersOffsets(models::Dataflow * dataflow, TIME_UNIT PERIOD,  std::map<Vertex,std::vector<TIME_UNIT> > & res) {
-
-       //recuperer les transition
-       res.clear();
-
-
-       VERBOSE_ASSERT(dataflow,TXT_NEVER_HAPPEND);
+        }
+    }}
+    return true;
+}
 
 
 
-       // STEP 0 - Need the repetition vector
-       VERBOSE_INFO("STEP 0 :  Need the repetition vector");
-       VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+bool algorithms::generateBurstOffsets(models::Dataflow * const dataflow,std::map<Vertex,std::vector<TIME_UNIT> > & res) {
+    //recuperer les transition
 
 
-       std::map<std::pair<Vertex,EXEC_COUNT>,TIME_UNIT> s;
+    res.clear();
 
-       std::map<Vertex,TIME_UNIT> mu;
-       {ForEachVertex(dataflow,vi){
-           mu[vi] = (PERIOD / dataflow->getNi(vi)) * dataflow->getPhasesQuantity(vi);
-           VERBOSE_DEBUG( "Mu_" << dataflow->getVertexName(vi) << " = " << mu[vi]);
-       }}
+    {ForEachVertex(dataflow,pTask) {
+        EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
+        res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
+        TIME_UNIT val = 0;
+        for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
 
-       // STEP 1 - Generate BURST EXECUTION
-       VERBOSE_INFO("STEP 1 :  Burst execution and alpha + lambda computation ");
-       {ForEachVertex(dataflow,vi){
-           std::string verbose_line = dataflow->getVertexName(vi) + std::string(" s = 0 ");
-           const  EXEC_COUNT maxk = dataflow->getPhasesQuantity(vi);
-           s[std::make_pair(vi,1)] = 0;
-           for(EXEC_COUNT k = 2 ; k <= maxk;k++){
-               s[std::make_pair(vi,k)] = s[std::make_pair(vi,k-1)] + dataflow->getVertexDuration(vi,k-1);
-               verbose_line += std::string(",") + commons::toString(s[std::make_pair(vi,k)]);
-           }
-           VERBOSE_DEBUG(verbose_line);
-       }}
+            if (k > 1) val += dataflow->getVertexDuration(pTask,k-1);
+            res[pTask].push_back(val);
+
+        }
+    }}
+    return true;
+}
 
 
-       std::map<Edge,TOKEN_UNIT> lambda_prod;
-       std::map<Edge,TOKEN_UNIT> lambda_cons;
-       std::map<Edge,TIME_UNIT>  alpha;
+bool algorithms::generateAverageOffsets(models::Dataflow * dataflow, TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & res) {
 
-       {ForEachEdge(dataflow,e) {
+    VERBOSE_ASSERT(OMEGA > 0 , "unsuable period.");
+    res.clear();
 
-           TOKEN_UNIT lambda_p = dataflow->getEdgeIn(e);
-           TOKEN_UNIT lambda_c = dataflow->getEdgeOut(e);
+    VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+    {ForEachVertex(dataflow,pTask) {
+        EXEC_COUNT max_k = dataflow->getPhasesQuantity(pTask);
+        TIME_UNIT muti = OMEGA  * dataflow->getPhasesQuantity(pTask) / dataflow->getNi(pTask);
+        VERBOSE_ASSERT(muti > 0 , "unsuable period.");
+        TIME_UNIT sum = 0;
+        TIME_UNIT lti = 0;
+        for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
+                lti += dataflow->getVertexDuration(pTask,k)  ;
+        }
 
-           const EXEC_COUNT max_ki = dataflow->getEdgeInPhasesCount(e);
-           const EXEC_COUNT max_kj = dataflow->getEdgeOutPhasesCount(e);
+        res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
 
-           const Vertex vi = dataflow->getEdgeSource(e);
-           const TIME_UNIT alpha_e = (TIME_UNIT) dataflow->getEdgeIn(e) / mu[vi] ; // token by sec
+        if (max_k == 1) {
+            res.at(pTask).push_back(0);
+        } else {
+            for (EXEC_COUNT k = 1 ; k <= max_k ; k++) {
+                if (k > 1) sum += dataflow->getVertexDuration(pTask,k-1)  ;
+
+                TIME_UNIT newtime = sum *  (muti / lti);
+                if (lti == 0) newtime = 0; // SUPERFIX
+                VERBOSE_DEBUG("task =" << dataflow->getVertexName(pTask) <<  " k=" << k << " offset = " << newtime);
+                res.at(pTask).push_back(newtime);
+            }
+        }
+    }}
+    return true;
+}
 
 
-           for (EXEC_COUNT kj = 1 ; kj <= max_kj ; kj++) {
-               lambda_p = std::gcd(lambda_p , dataflow->getEdgeOutPhase(e,kj));
-           }
-           for (EXEC_COUNT ki = 1 ; ki <= max_ki ; ki++) {
-               lambda_c = std::gcd(lambda_c , dataflow->getEdgeInPhase(e,ki));
-           }
+bool algorithms::generateWiggersOffsets(models::Dataflow * dataflow, TIME_UNIT PERIOD, std::map<Vertex,std::vector<TIME_UNIT> > & res){
 
-           lambda_prod[e]      = lambda_p;
-           lambda_cons[e]      = lambda_c;
-           alpha[e]            = alpha_e;
-           VERBOSE_DEBUG(dataflow->getEdgeName(e) << " : Alpha = " <<  alpha_e << " Lambda in/out = " << lambda_p << "/" << lambda_c);
-       }}
+    //recuperer les transition
+    res.clear();
 
-       // Lambda and alpha  : Done
 
-       // STEP 2 - compute p_l^e(t) = \alpha_e + \Beta_e^p (courbe production)
-       VERBOSE_INFO("STEP 2 : production Beta_e^p computation.");
-       std::map<Edge,TIME_UNIT> beta_prod;
+    VERBOSE_ASSERT(dataflow,TXT_NEVER_HAPPEND);
 
-       {ForEachEdge(dataflow,e) {
-           const TIME_UNIT alpha_e = alpha[e];
-           const TOKEN_UNIT lambda_p = lambda_prod[e];
-           const Vertex vi         = dataflow->getEdgeSource(e);
-           const EXEC_COUNT max_ki = dataflow->getEdgeInPhasesCount(e);
 
-           TIME_UNIT  beta_e = std::numeric_limits<TIME_UNIT>::infinity();
-           TOKEN_UNIT cumul_production = 0;
 
-           for (EXEC_COUNT ki = 1 ; ki <= max_ki ; ki++) {
-               VERBOSE_DEBUG("Check production at " << ki << " of " << cumul_production << "+" << dataflow->getEdgeInPhase(e,ki));
-               cumul_production += dataflow->getEdgeInPhase(e,ki);
-               TOKEN_UNIT level = commons::ceil(cumul_production - dataflow->getEdgeInPhase(e,ki),lambda_p) + 1;
-               if (cumul_production >= lambda_p) {
-                   VERBOSE_DEBUG(" -> Good point is " << lambda_p << " ; " << s[std::make_pair(vi,ki)] + dataflow->getVertexDuration(vi,ki) );
-                   beta_e = std::min ( beta_e ,
-                                      (TIME_UNIT)  level - alpha_e * (s[std::make_pair(vi,ki)]  + dataflow->getVertexDuration(vi,ki))
-                                      );
-                   VERBOSE_DEBUG(" -> " << dataflow->getEdgeName(e) << " :  Beta prod = " <<  beta_e);
-                   break;
-               } else {
-                   VERBOSE_DEBUG(" -> Skip it ");
-               }
-           }
-           beta_prod[e]=beta_e;
-           VERBOSE_ASSERT(beta_prod[e]==beta_e,TXT_NEVER_HAPPEND);
-       }}
+    // STEP 0 - Need the repetition vector
+    VERBOSE_INFO("STEP 0 :  Need the repetition vector");
+    VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+
+
+    std::map<std::pair<Vertex,EXEC_COUNT>,TIME_UNIT> s;
+
+    std::map<Vertex,TIME_UNIT> mu;
+    {ForEachVertex(dataflow,vi){
+        mu[vi] = (PERIOD / dataflow->getNi(vi)) * dataflow->getPhasesQuantity(vi);
+        VERBOSE_DEBUG( "Mu_" << dataflow->getVertexName(vi) << " = " << mu[vi]);
+    }}
+
+    // STEP 1 - Generate BURST EXECUTION
+    VERBOSE_INFO("STEP 1 :  Burst execution and alpha + lambda computation ");
+    {ForEachVertex(dataflow,vi){
+        std::string verbose_line = dataflow->getVertexName(vi) + std::string(" s = 0 ");
+        const  EXEC_COUNT maxk = dataflow->getPhasesQuantity(vi);
+        s[std::make_pair(vi,1)] = 0;
+        for(EXEC_COUNT k = 2 ; k <= maxk;k++){
+            s[std::make_pair(vi,k)] = s[std::make_pair(vi,k-1)] + dataflow->getVertexDuration(vi,k-1);
+            verbose_line += std::string(",") + commons::toString(s[std::make_pair(vi,k)]);
+        }
+        VERBOSE_DEBUG(verbose_line);
+    }}
+
+
+    std::map<Edge,TOKEN_UNIT> lambda_prod;
+    std::map<Edge,TOKEN_UNIT> lambda_cons;
+    std::map<Edge,TIME_UNIT>  alpha;
+
+    {ForEachEdge(dataflow,e) {
+
+        TOKEN_UNIT lambda_p = dataflow->getEdgeIn(e);
+        TOKEN_UNIT lambda_c = dataflow->getEdgeOut(e);
+
+        const EXEC_COUNT max_ki = dataflow->getEdgeInPhasesCount(e);
+        const EXEC_COUNT max_kj = dataflow->getEdgeOutPhasesCount(e);
+
+        const Vertex vi = dataflow->getEdgeSource(e);
+        const TIME_UNIT alpha_e = (TIME_UNIT) dataflow->getEdgeIn(e) / mu[vi] ; // token by sec
+
+
+        for (EXEC_COUNT kj = 1 ; kj <= max_kj ; kj++) {
+            lambda_p = std::gcd(lambda_p , dataflow->getEdgeOutPhase(e,kj));
+        }
+        for (EXEC_COUNT ki = 1 ; ki <= max_ki ; ki++) {
+            lambda_c = std::gcd(lambda_c , dataflow->getEdgeInPhase(e,ki));
+        }
+
+        lambda_prod[e]      = lambda_p;
+        lambda_cons[e]      = lambda_c;
+        alpha[e]            = alpha_e;
+        VERBOSE_DEBUG(dataflow->getEdgeName(e) << " : Alpha = " <<  alpha_e << " Lambda in/out = " << lambda_p << "/" << lambda_c);
+    }}
+
+    // Lambda and alpha  : Done
+
+    // STEP 2 - compute p_l^e(t) = \alpha_e + \Beta_e^p (courbe production)
+    VERBOSE_INFO("STEP 2 : production Beta_e^p computation.");
+    std::map<Edge,TIME_UNIT> beta_prod;
+
+    {ForEachEdge(dataflow,e) {
+        const TIME_UNIT alpha_e   = alpha[e];
+        const TOKEN_UNIT lambda_p = lambda_prod[e];
+        const Vertex vi           = dataflow->getEdgeSource(e);
+        const EXEC_COUNT max_ki   = dataflow->getEdgeInPhasesCount(e);
+
+        TIME_UNIT  beta_e = std::numeric_limits<TIME_UNIT>::infinity();
+        TOKEN_UNIT cumul_production = 0;
+
+        for (EXEC_COUNT ki = 1 ; ki <= max_ki ; ki++) {
+            VERBOSE_DEBUG("Check production at " << ki << " of " << cumul_production << "+" << dataflow->getEdgeInPhase(e,ki));
+            cumul_production += dataflow->getEdgeInPhase(e,ki);
+            TOKEN_UNIT level = commons::ceil(cumul_production - dataflow->getEdgeInPhase(e,ki),lambda_p) + 1;
+            if (cumul_production >= lambda_p) {
+                VERBOSE_DEBUG(" -> Good point is " << lambda_p << " ; " << s[std::make_pair(vi,ki)] + dataflow->getVertexDuration(vi,ki) );
+                beta_e = std::min ( beta_e ,
+                                    (TIME_UNIT)  level - alpha_e * (s[std::make_pair(vi,ki)]  + dataflow->getVertexDuration(vi,ki))
+                                    );
+                VERBOSE_DEBUG(" -> " << dataflow->getEdgeName(e) << " :  Beta prod = " <<  beta_e);
+                break;
+            } else {
+                VERBOSE_DEBUG(" -> Skip it ");
+            }
+        }
+        beta_prod[e]=beta_e;
+        VERBOSE_ASSERT(beta_prod[e]==beta_e,TXT_NEVER_HAPPEND);
+    }}
 
 
 
        //step 3 - retiming of starting times
-       VERBOSE_INFO("STEP 3 : Retiming.");
+    VERBOSE_INFO("STEP 3 : Retiming.");
 
-       std::map<std::pair<Vertex,EXEC_COUNT>,TIME_UNIT> g; // new start time
-       std::map<std::pair<Vertex,EXEC_COUNT>,TIME_UNIT> h; // new end time
-
-
-       {ForEachVertex(dataflow,vi){
-
-           VERBOSE_DEBUG("Retiming of " << dataflow->getVertexName(vi));
-           const EXEC_COUNT maxk = dataflow->getPhasesQuantity(vi);
+    std::map<std::pair<Vertex,EXEC_COUNT>,TIME_UNIT> g; // new start time
+    std::map<std::pair<Vertex,EXEC_COUNT>,TIME_UNIT> h; // new end time
 
 
+    {ForEachVertex(dataflow,vi){
 
-           h[std::make_pair(vi,maxk)] = mu[vi];
-           //{ForOutputEdges(dataflow,vi,e) {
-           //    h[std::make_pair(vi,maxk)] = std::min(h[std::make_pair(vi,maxk)], commons::division(commons::ceil(dataflow->getEdgeIn(e) - dataflow->getEdgeInPhase(e,maxk) + 1,lambda_prod[e]) - beta_prod[e],alpha[e]) );
-           //}}
-           g[std::make_pair(vi,maxk)] = h[std::make_pair(vi,maxk)] - dataflow->getVertexDuration(vi,maxk);
-           VERBOSE_DEBUG("Task_duration("<< dataflow->getVertexName(vi) << ","<< maxk << ") = "<< dataflow->getVertexDuration(vi,maxk));
-           VERBOSE_DEBUG("burst_start(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << s[std::make_pair(vi,maxk)]);
-           VERBOSE_DEBUG("burst_end(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << s[std::make_pair(vi,maxk)] + dataflow->getVertexDuration(vi,maxk));
-           VERBOSE_DEBUG("g(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << g[std::make_pair(vi,maxk)]);
-           VERBOSE_DEBUG("h(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << h[std::make_pair(vi,maxk)]);
-
-           for(EXEC_COUNT k = (maxk - 1); k >= 1;k--){
-               // print ax +b
-               // print h(v)
-               h[std::make_pair(vi,k)] = g[std::make_pair(vi,k+1)];
-               VERBOSE_DEBUG("Task_duration("<< dataflow->getVertexName(vi) << ","<< k << ") = "<< dataflow->getVertexDuration(vi,k));
-               VERBOSE_DEBUG("burst_start(" << dataflow->getVertexName(vi) << ","<< k << ") = " << s[std::make_pair(vi,k)]);
-               VERBOSE_DEBUG("burst_end(" << dataflow->getVertexName(vi) << ","<< k << ") = " << s[std::make_pair(vi,k)] + dataflow->getVertexDuration(vi,k));
-
-               VERBOSE_DEBUG("     compute h(" << dataflow->getVertexName(vi) << ","<< k << ") = " << h[std::make_pair(vi,k)]);
-	       if ((h[std::make_pair(vi,k)] - dataflow->getVertexDuration(vi,k)) < s[std::make_pair(vi,k)]) {
-		 VERBOSE_ERROR("start is too early...");
-		 VERBOSE_FAILURE();
-	       }
-               {ForOutputEdges(dataflow,vi,e) {
-                   TOKEN_UNIT cumul_production_km1 = 0;
-                   for (EXEC_COUNT subk = 1 ; subk < k ; subk++) cumul_production_km1+= dataflow->getEdgeInPhase(e,subk);
-
-                   const TOKEN_UNIT m_e_k = commons::ceil(cumul_production_km1 + 1,lambda_prod[e]); // relevant token size
-                   const TIME_UNIT bound = commons::division(m_e_k - beta_prod[e],alpha[e]);
-                   VERBOSE_DEBUG("   bound computation is : " << m_e_k <<"-"<< beta_prod[e] << "/" << alpha[e]);
-                   VERBOSE_DEBUG("     compute h(" << dataflow->getVertexName(vi) << ","<< k << ") = min (h=" << h[std::make_pair(vi,k)] << ",b=" << bound << ")");
-                   h[std::make_pair(vi,k)] = std::min (h[std::make_pair(vi,k)] , bound);
-		  if ((bound - dataflow->getVertexDuration(vi,k)) < s[std::make_pair(vi,k)]) {
-		    VERBOSE_ERROR("start with bound " <<bound << " is too early...");   
-		     h[std::make_pair(vi,k)] = std::max (h[std::make_pair(vi,k)] ,s[std::make_pair(vi,k)] + dataflow->getVertexDuration(vi,k) );
-		     
-	       }
-
-               }}
+        VERBOSE_DEBUG("Retiming of " << dataflow->getVertexName(vi));
+        const EXEC_COUNT maxk = dataflow->getPhasesQuantity(vi);
 
 
-               g[std::make_pair(vi,k)] = h[std::make_pair(vi,k)]  - dataflow->getVertexDuration(vi,k);
-               VERBOSE_DEBUG("g(" << dataflow->getVertexName(vi) << ","<< k << ") = " << g[std::make_pair(vi,k)]);
-               VERBOSE_DEBUG("h(" << dataflow->getVertexName(vi) << ","<< k << ") = " << g[std::make_pair(vi,k)]+ dataflow->getVertexDuration(vi,k));
 
-           }
-       }}
+        h[std::make_pair(vi,maxk)] = mu[vi];
+        //{ForOutputEdges(dataflow,vi,e) {
+        //    h[std::make_pair(vi,maxk)] = std::min(h[std::make_pair(vi,maxk)], commons::division(commons::ceil(dataflow->getEdgeIn(e) - dataflow->getEdgeInPhase(e,maxk) + 1,lambda_prod[e]) - beta_prod[e],alpha[e]) );
+        //}}
+        g[std::make_pair(vi,maxk)] = h[std::make_pair(vi,maxk)] - dataflow->getVertexDuration(vi,maxk);
+        VERBOSE_DEBUG("Task_duration("<< dataflow->getVertexName(vi) << ","<< maxk << ") = "<< dataflow->getVertexDuration(vi,maxk));
+        VERBOSE_DEBUG("burst_start(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << s[std::make_pair(vi,maxk)]);
+        VERBOSE_DEBUG("burst_end(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << s[std::make_pair(vi,maxk)] + dataflow->getVertexDuration(vi,maxk));
+        VERBOSE_DEBUG("g(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << g[std::make_pair(vi,maxk)]);
+        VERBOSE_DEBUG("h(" << dataflow->getVertexName(vi) << ","<< maxk << ") = " << h[std::make_pair(vi,maxk)]);
 
-       {ForEachVertex(dataflow,vi){
-           const EXEC_COUNT maxk = dataflow->getPhasesQuantity(vi);
+        for(EXEC_COUNT k = (maxk - 1); k >= 1;k--){
+            // print ax + b
+            // print h(v)
+            h[std::make_pair(vi,k)] = g[std::make_pair(vi,k+1)];
+            VERBOSE_DEBUG("Task_duration("<< dataflow->getVertexName(vi) << ","<< k << ") = "<< dataflow->getVertexDuration(vi,k));
+            VERBOSE_DEBUG("burst_start(" << dataflow->getVertexName(vi) << ","<< k << ") = " << s[std::make_pair(vi,k)]);
+            VERBOSE_DEBUG("burst_end(" << dataflow->getVertexName(vi) << ","<< k << ") = " << s[std::make_pair(vi,k)] + dataflow->getVertexDuration(vi,k));
 
-           res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (vi, std::vector<TIME_UNIT>()));
-           if (maxk == 1 ) {
-               res.at(vi).push_back(0);
-           } else {
-           for(EXEC_COUNT k = 1; k <= maxk;k++) {
-               VERBOSE_DEBUG("g(" << dataflow->getVertexName(vi) << ","<< k << ") = " << g[std::make_pair(vi,k)]);
+            VERBOSE_DEBUG("     compute h(" << dataflow->getVertexName(vi) << ","<< k << ") = " << h[std::make_pair(vi,k)]);
+        if ((h[std::make_pair(vi,k)] - dataflow->getVertexDuration(vi,k)) < s[std::make_pair(vi,k)]) {
+        VERBOSE_ERROR("start is too early...");
+        VERBOSE_FAILURE();
+        }
+            {ForOutputEdges(dataflow,vi,e) {
+                TOKEN_UNIT cumul_production_km1 = 0;
+                for (EXEC_COUNT subk = 1 ; subk < k ; subk++) cumul_production_km1 += dataflow->getEdgeInPhase(e,subk);
 
-               res.at(vi).push_back(g[std::make_pair(vi,k)]);
-           }
-           }
-       }}
+                const TOKEN_UNIT m_e_k = commons::ceil(cumul_production_km1 + 1,lambda_prod[e]); // relevant token size
+                const TIME_UNIT bound = commons::division(m_e_k - beta_prod[e],alpha[e]);
+                VERBOSE_DEBUG("   bound computation is : " << m_e_k <<"-"<< beta_prod[e] << "/" << alpha[e]);
+                VERBOSE_DEBUG("     compute h(" << dataflow->getVertexName(vi) << ","<< k << ") = min (h=" << h[std::make_pair(vi,k)] << ",b=" << bound << ")");
+                h[std::make_pair(vi,k)] = std::min (h[std::make_pair(vi,k)] , bound);
+        if ((bound - dataflow->getVertexDuration(vi,k)) < s[std::make_pair(vi,k)]) {
+        VERBOSE_ERROR("start with bound " <<bound << " is too early...");   
+            h[std::make_pair(vi,k)] = std::max (h[std::make_pair(vi,k)] ,s[std::make_pair(vi,k)] + dataflow->getVertexDuration(vi,k) );
+            
+        }
 
-       return true;
-   }
+            }}
 
-   bool algorithms::generateMinMaxOffsets(models::Dataflow * dataflow, TIME_UNIT OMEGA,  std::map<Vertex,std::vector<TIME_UNIT> > & res) {
 
-       //recuperer les transition
-       res.clear();
+            g[std::make_pair(vi,k)] = h[std::make_pair(vi,k)]  - dataflow->getVertexDuration(vi,k);
+            VERBOSE_DEBUG("g(" << dataflow->getVertexName(vi) << ","<< k << ") = " << g[std::make_pair(vi,k)]);
+            VERBOSE_DEBUG("h(" << dataflow->getVertexName(vi) << ","<< k << ") = " << g[std::make_pair(vi,k)]+ dataflow->getVertexDuration(vi,k));
 
-       bool minmaxwork = true;
+        }
+    }}
 
-       {ForEachVertex(dataflow,pTask) {
-           res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
-           // Solve MinMax for this task
-           minmaxwork = minmaxwork && ctnewMinMax(dataflow,OMEGA, pTask,res.at(pTask));
+    {ForEachVertex(dataflow,vi){
+        const EXEC_COUNT maxk = dataflow->getPhasesQuantity(vi);
 
-       }}
-       return minmaxwork;
-   }
+        res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (vi, std::vector<TIME_UNIT>()));
+        if (maxk == 1 ) {
+            res.at(vi).push_back(0);
+        } else {
+            for (EXEC_COUNT k = 1; k <= maxk;k++) {
+                VERBOSE_DEBUG("g(" << dataflow->getVertexName(vi) << ","<< k << ") = " << g[std::make_pair(vi,k)]);
+
+                res.at(vi).push_back(g[std::make_pair(vi,k)]);
+            }
+        }
+    }}
+
+    return true;
+}
+
+bool algorithms::generateMinMaxOffsets(models::Dataflow * dataflow, TIME_UNIT OMEGA, std::map<Vertex,std::vector<TIME_UNIT> > & res){
+
+    //recuperer les transition
+    res.clear();
+
+    bool minmaxwork = true;
+
+    {ForEachVertex(dataflow,pTask) {
+        res.insert(std::pair<Vertex ,  std::vector<TIME_UNIT> > (pTask, std::vector<TIME_UNIT>()));
+        // Solve MinMax for this task
+        minmaxwork = minmaxwork && ctnewMinMax(dataflow,OMEGA, pTask,res.at(pTask));
+
+    }}
+    return minmaxwork;
+}
 
 
 
@@ -742,37 +749,37 @@
 
 
 
-   BufferSizingResult algorithms::compute_periodic_fixed_memory   (models::Dataflow* const  dataflow, std::map<Vertex,std::vector<TIME_UNIT> > & offsets,  TIME_UNIT PERIOD , bool ilp_solving , bool gen_only) {
+    BufferSizingResult algorithms::compute_periodic_fixed_memory (models::Dataflow* const  dataflow, std::map<Vertex,std::vector<TIME_UNIT> > & offsets,  TIME_UNIT PERIOD, bool ilp_solving, bool gen_only){
+
+    BufferSizingResult res;
+        commons::ValueKind CONTINUE_OR_INTEGER = commons::KIND_CONTINUE;
+        if (ilp_solving) CONTINUE_OR_INTEGER = commons::KIND_INTEGER;
+
+        VERBOSE_ASSERT(dataflow,TXT_NEVER_HAPPEND);
+
+        VERBOSE_ASSERT (PERIOD > 0, "The period must be defined");
+        VERBOSE_ASSERT (PERIOD != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
+        VERBOSE_ASSERT(dataflow->is_consistent(),"inconsistent graph");
+
+        TIME_UNIT FREQUENCY = 1.0 / PERIOD;
+
+            // STEP 0 - CSDF Graph should be normalized
+            VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
 
 
-   	commons::ValueKind CONTINUE_OR_INTEGER = commons::KIND_CONTINUE;
-   	if (ilp_solving) CONTINUE_OR_INTEGER = commons::KIND_INTEGER;
-
-   	VERBOSE_ASSERT(dataflow,TXT_NEVER_HAPPEND);
-
-   	VERBOSE_ASSERT (PERIOD > 0, "The period must be defined");
-   	VERBOSE_ASSERT (PERIOD != std::numeric_limits<TIME_UNIT>::infinity(), "The period must be defined");
-   	VERBOSE_ASSERT(dataflow->is_consistent(),"inconsistent graph");
-
-   	TIME_UNIT FREQUENCY = 1.0 / PERIOD;
-
-      	// STEP 0 - CSDF Graph should be normalized
-      	VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
+        //##################################################################
+        // Linear program generation
+        //##################################################################
+        const std::string problemName =  "PeriodicSizingFixed_" + dataflow->getGraphName() + "_" + commons::toString(FREQUENCY) + ((CONTINUE_OR_INTEGER == commons::KIND_INTEGER) ? "_INT" : "");
+        commons::GLPSol g = commons::GLPSol(problemName,commons::MIN_OBJ);
 
 
-   	//##################################################################
-   	// Linear program generation
-   	//##################################################################
-   	const std::string problemName =  "PeriodicSizingFixed_" + dataflow->getGraphName() + "_" + commons::toString(FREQUENCY) + ((CONTINUE_OR_INTEGER == commons::KIND_INTEGER) ? "_INT" : "");
-   	commons::GLPSol g = commons::GLPSol(problemName,commons::MIN_OBJ);
-
-
-       // Starting times
-       //******************************************************************
-       {ForEachVertex(dataflow,pVertex) {
-           std::string name = dataflow->getVertexName(pVertex);
-           g.addColumn("s_" + name,commons::KIND_CONTINUE,commons::bound_s(commons::LOW_BOUND,0),0);
-       }}
+        // Starting times
+        //******************************************************************
+        {ForEachVertex(dataflow,pVertex) {
+            std::string name = dataflow->getVertexName(pVertex);
+            g.addColumn("s_" + name,commons::KIND_CONTINUE,commons::bound_s(commons::LOW_BOUND,0),0);
+        }}
 
 
 
@@ -856,8 +863,8 @@
                      if (alphamin <= alphamax) { // check if contraint exist
                           const std::string pred_row_name = "precedence_" + buffername + "_" + commons::toString<EXEC_COUNT>(ai) + "_" + commons::toString<EXEC_COUNT>(aj);
                           TIME_UNIT coef = offsetai - offsetaj + ltai + (TIME_UNIT) alphamax * (TIME_UNIT) ( mu_i /  (TIME_UNIT) Zi);
-                          VERBOSE_DEBUG("LP : s_" <<  targetStr  << " - " << "s_"  <<  sourceStr  << " >= " << offsetai << " - " <<  offsetaj << " + " <<  ltai << " + " << (TIME_UNIT) alphamax << " * (" << mu_i << "/" << Zi <<  ")");
-                          VERBOSE_DEBUG("     s_" <<  targetStr  << " - " << "s_"  <<  sourceStr  << " >= " << coef);
+                          VERBOSE_DEBUG("LP : s_" << targetStr << " - " << "s_" << sourceStr << " >= " << offsetai << " - " << offsetaj << " + " << ltai << " + " << (TIME_UNIT) alphamax << " * (" << mu_i << "/" << Zi <<  ")");
+                          VERBOSE_DEBUG("     s_" << targetStr << " - " << "s_" << sourceStr << " >= " << coef);
 
                           g.addRow(pred_row_name,commons::bound_s(commons::LOW_BOUND, (double) coef));
                           if ((source != target)) {
@@ -1037,14 +1044,17 @@
                 //TOKEN_UNIT from_integer_mop          = commons::floor(g.getIntegerValue(feedback_mo_name),1);
 
                  TOKEN_UNIT buffersize =  feedbackmopmax  + dataflow->getPreload(c);
+                 res.add_edge_size(dataflow->getEdgeId(c), buffersize);
                  total_buffer_size += buffersize * dataflow->getTokenSize(c);
-                 VERBOSE_INFO(dataflow->getEdgeName(c) << " :" << g.getValue(feedback_mo_name) << " + " << dataflow->getPreload(c) << " -> " << feedbackmopmax << " + " << dataflow->getPreload(c)<< " = " << buffersize  );
+                 VERBOSE_INFO(dataflow->getEdgeName(c) << " :" << g.getValue(feedback_mo_name) << " + " << dataflow->getPreload(c) << " -> " << feedbackmopmax << " + " << dataflow->getPreload(c)<< " = " << buffersize);
 
              }}
 
              VERBOSE_INFO("Loopback buffers : " << dataflow->getVerticesCount());
 
-        	 return BufferSizingResult(total_buffer_size);
+             res.set_validity(true);
+             res.set_total_size(total_buffer_size);
+        	 return res;
        } else {
            VERBOSE_ERROR("No feasible solution");
        }

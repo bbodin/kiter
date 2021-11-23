@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" type="csdf" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-csdf.xsd">
+ <applicationGraph name="noname">
+  <csdf name="noname" type="noname">
+   <actor name="miwf_0" type="a">
+    <port name="in_channel_1" type="out" rate="16"/>
+    <port name="in_channel_2" type="out" rate="16"/>
+    <port name="in_channel_3" type="out" rate="16"/>
+    <port name="in_channel_4" type="out" rate="16"/>
+    <port name="out_Rmiwf_0" type="in" rate="1"/>
+    <port name="in_Rmiwf_0" type="out" rate="1"/>
+   </actor>
+   <actor name="miwf_1" type="a">
+    <port name="in_channel_5" type="out" rate="16"/>
+    <port name="in_channel_6" type="out" rate="16"/>
+    <port name="in_channel_7" type="out" rate="16"/>
+    <port name="in_channel_8" type="out" rate="16"/>
+    <port name="out_Rmiwf_1" type="in" rate="1"/>
+    <port name="in_Rmiwf_1" type="out" rate="1"/>
+   </actor>
+   <actor name="miwf_2" type="a">
+    <port name="in_channel_9" type="out" rate="16"/>
+    <port name="in_channel_10" type="out" rate="16"/>
+    <port name="in_channel_11" type="out" rate="16"/>
+    <port name="in_channel_12" type="out" rate="16"/>
+    <port name="out_Rmiwf_2" type="in" rate="1"/>
+    <port name="in_Rmiwf_2" type="out" rate="1"/>
+   </actor>
+   <actor name="miwf_3" type="a">
+    <port name="in_channel_13" type="out" rate="16"/>
+    <port name="in_channel_14" type="out" rate="16"/>
+    <port name="in_channel_15" type="out" rate="16"/>
+    <port name="in_channel_16" type="out" rate="16"/>
+    <port name="out_Rmiwf_3" type="in" rate="1"/>
+    <port name="in_Rmiwf_3" type="out" rate="1"/>
+   </actor>
+   <actor name="cwac_0" type="a">
+    <port name="out_channel_1" type="in" rate="16"/>
+    <port name="out_channel_5" type="in" rate="16"/>
+    <port name="out_channel_9" type="in" rate="16"/>
+    <port name="out_channel_13" type="in" rate="16"/>
+    <port name="in_channel_17" type="out" rate="32"/>
+    <port name="in_channel_18" type="out" rate="32"/>
+    <port name="in_channel_19" type="out" rate="32"/>
+    <port name="in_channel_20" type="out" rate="32"/>
+    <port name="out_Rcwac_0" type="in" rate="1"/>
+    <port name="in_Rcwac_0" type="out" rate="1"/>
+   </actor>
+   <actor name="cwac_1" type="a">
+    <port name="out_channel_2" type="in" rate="16"/>
+    <port name="out_channel_6" type="in" rate="16"/>
+    <port name="out_channel_10" type="in" rate="16"/>
+    <port name="out_channel_14" type="in" rate="16"/>
+    <port name="in_channel_21" type="out" rate="32"/>
+    <port name="in_channel_22" type="out" rate="32"/>
+    <port name="in_channel_23" type="out" rate="32"/>
+    <port name="in_channel_24" type="out" rate="32"/>
+    <port name="out_Rcwac_1" type="in" rate="1"/>
+    <port name="in_Rcwac_1" type="out" rate="1"/>
+   </actor>
+   <actor name="cwac_2" type="a">
+    <port name="out_channel_3" type="in" rate="16"/>
+    <port name="out_channel_7" type="in" rate="16"/>
+    <port name="out_channel_11" type="in" rate="16"/>
+    <port name="out_channel_15" type="in" rate="16"/>
+    <port name="in_channel_25" type="out" rate="32"/>
+    <port name="in_channel_26" type="out" rate="32"/>
+    <port name="in_channel_27" type="out" rate="32"/>
+    <port name="in_channel_28" type="out" rate="32"/>
+    <port name="out_Rcwac_2" type="in" rate="1"/>
+    <port name="in_Rcwac_2" type="out" rate="1"/>
+   </actor>
+   <actor name="cwac_3" type="a">
+    <port name="out_channel_4" type="in" rate="16"/>
+    <port name="out_channel_8" type="in" rate="16"/>
+    <port name="out_channel_12" type="in" rate="16"/>
+    <port name="out_channel_16" type="in" rate="16"/>
+    <port name="in_channel_29" type="out" rate="32"/>
+    <port name="in_channel_30" type="out" rate="32"/>
+    <port name="in_channel_31" type="out" rate="32"/>
+    <port name="in_channel_32" type="out" rate="32"/>
+    <port name="out_Rcwac_3" type="in" rate="1"/>
+    <port name="in_Rcwac_3" type="out" rate="1"/>
+   </actor>
+   <actor name="ifft_0" type="a">
+    <port name="out_channel_17" type="in" rate="32"/>
+    <port name="out_channel_21" type="in" rate="32"/>
+    <port name="out_channel_25" type="in" rate="32"/>
+    <port name="out_channel_29" type="in" rate="32"/>
+    <port name="in_channel_33" type="out" rate="32"/>
+    <port name="in_channel_34" type="out" rate="32"/>
+    <port name="in_channel_35" type="out" rate="32"/>
+    <port name="in_channel_36" type="out" rate="32"/>
+    <port name="out_Rifft_0" type="in" rate="1"/>
+    <port name="in_Rifft_0" type="out" rate="1"/>
+   </actor>
+   <actor name="ifft_1" type="a">
+    <port name="out_channel_18" type="in" rate="32"/>
+    <port name="out_channel_22" type="in" rate="32"/>
+    <port name="out_channel_26" type="in" rate="32"/>
+    <port name="out_channel_30" type="in" rate="32"/>
+    <port name="in_channel_37" type="out" rate="32"/>
+    <port name="in_channel_38" type="out" rate="32"/>
+    <port name="in_channel_39" type="out" rate="32"/>
+    <port name="in_channel_40" type="out" rate="32"/>
+    <port name="out_Rifft_1" type="in" rate="1"/>
+    <port name="in_Rifft_1" type="out" rate="1"/>
+   </actor>
+   <actor name="ifft_2" type="a">
+    <port name="out_channel_19" type="in" rate="32"/>
+    <port name="out_channel_23" type="in" rate="32"/>
+    <port name="out_channel_27" type="in" rate="32"/>
+    <port name="out_channel_31" type="in" rate="32"/>
+    <port name="in_channel_41" type="out" rate="32"/>
+    <port name="in_channel_42" type="out" rate="32"/>
+    <port name="in_channel_43" type="out" rate="32"/>
+    <port name="in_channel_44" type="out" rate="32"/>
+    <port name="out_Rifft_2" type="in" rate="1"/>
+    <port name="in_Rifft_2" type="out" rate="1"/>
+   </actor>
+   <actor name="ifft_3" type="a">
+    <port name="out_channel_20" type="in" rate="32"/>
+    <port name="out_channel_24" type="in" rate="32"/>
+    <port name="out_channel_28" type="in" rate="32"/>
+    <port name="out_channel_32" type="in" rate="32"/>
+    <port name="in_channel_45" type="out" rate="32"/>
+    <port name="in_channel_46" type="out" rate="32"/>
+    <port name="in_channel_47" type="out" rate="32"/>
+    <port name="in_channel_48" type="out" rate="32"/>
+    <port name="out_Rifft_3" type="in" rate="1"/>
+    <port name="in_Rifft_3" type="out" rate="1"/>
+   </actor>
+   <actor name="dd_0" type="a">
+    <port name="out_channel_33" type="in" rate="32"/>
+    <port name="out_channel_37" type="in" rate="32"/>
+    <port name="out_channel_41" type="in" rate="32"/>
+    <port name="out_channel_45" type="in" rate="32"/>
+    <port name="out_Rdd_0" type="in" rate="1"/>
+    <port name="in_Rdd_0" type="out" rate="1"/>
+   </actor>
+   <actor name="dd_1" type="a">
+    <port name="out_channel_34" type="in" rate="32"/>
+    <port name="out_channel_38" type="in" rate="32"/>
+    <port name="out_channel_42" type="in" rate="32"/>
+    <port name="out_channel_46" type="in" rate="32"/>
+    <port name="out_Rdd_1" type="in" rate="1"/>
+    <port name="in_Rdd_1" type="out" rate="1"/>
+   </actor>
+   <actor name="dd_2" type="a">
+    <port name="out_channel_35" type="in" rate="32"/>
+    <port name="out_channel_39" type="in" rate="32"/>
+    <port name="out_channel_43" type="in" rate="32"/>
+    <port name="out_channel_47" type="in" rate="32"/>
+    <port name="out_Rdd_2" type="in" rate="1"/>
+    <port name="in_Rdd_2" type="out" rate="1"/>
+   </actor>
+   <actor name="dd_3" type="a">
+    <port name="out_channel_36" type="in" rate="32"/>
+    <port name="out_channel_40" type="in" rate="32"/>
+    <port name="out_channel_44" type="in" rate="32"/>
+    <port name="out_channel_48" type="in" rate="32"/>
+    <port name="out_Rdd_3" type="in" rate="1"/>
+    <port name="in_Rdd_3" type="out" rate="1"/>
+   </actor>
+   <channel name="channel_1" srcActor="miwf_0" srcPort="in_channel_1" dstActor="cwac_0" dstPort="out_channel_1" size="0" initialTokens="0"/>
+   <channel name="channel_2" srcActor="miwf_0" srcPort="in_channel_2" dstActor="cwac_1" dstPort="out_channel_2" size="0" initialTokens="0"/>
+   <channel name="channel_3" srcActor="miwf_0" srcPort="in_channel_3" dstActor="cwac_2" dstPort="out_channel_3" size="0" initialTokens="0"/>
+   <channel name="channel_4" srcActor="miwf_0" srcPort="in_channel_4" dstActor="cwac_3" dstPort="out_channel_4" size="0" initialTokens="0"/>
+   <channel name="channel_5" srcActor="miwf_1" srcPort="in_channel_5" dstActor="cwac_0" dstPort="out_channel_5" size="0" initialTokens="0"/>
+   <channel name="channel_6" srcActor="miwf_1" srcPort="in_channel_6" dstActor="cwac_1" dstPort="out_channel_6" size="0" initialTokens="0"/>
+   <channel name="channel_7" srcActor="miwf_1" srcPort="in_channel_7" dstActor="cwac_2" dstPort="out_channel_7" size="0" initialTokens="0"/>
+   <channel name="channel_8" srcActor="miwf_1" srcPort="in_channel_8" dstActor="cwac_3" dstPort="out_channel_8" size="0" initialTokens="0"/>
+   <channel name="channel_9" srcActor="miwf_2" srcPort="in_channel_9" dstActor="cwac_0" dstPort="out_channel_9" size="0" initialTokens="0"/>
+   <channel name="channel_10" srcActor="miwf_2" srcPort="in_channel_10" dstActor="cwac_1" dstPort="out_channel_10" size="0" initialTokens="0"/>
+   <channel name="channel_11" srcActor="miwf_2" srcPort="in_channel_11" dstActor="cwac_2" dstPort="out_channel_11" size="0" initialTokens="0"/>
+   <channel name="channel_12" srcActor="miwf_2" srcPort="in_channel_12" dstActor="cwac_3" dstPort="out_channel_12" size="0" initialTokens="0"/>
+   <channel name="channel_13" srcActor="miwf_3" srcPort="in_channel_13" dstActor="cwac_0" dstPort="out_channel_13" size="0" initialTokens="0"/>
+   <channel name="channel_14" srcActor="miwf_3" srcPort="in_channel_14" dstActor="cwac_1" dstPort="out_channel_14" size="0" initialTokens="0"/>
+   <channel name="channel_15" srcActor="miwf_3" srcPort="in_channel_15" dstActor="cwac_2" dstPort="out_channel_15" size="0" initialTokens="0"/>
+   <channel name="channel_16" srcActor="miwf_3" srcPort="in_channel_16" dstActor="cwac_3" dstPort="out_channel_16" size="0" initialTokens="0"/>
+   <channel name="channel_17" srcActor="cwac_0" srcPort="in_channel_17" dstActor="ifft_0" dstPort="out_channel_17" size="0" initialTokens="0"/>
+   <channel name="channel_18" srcActor="cwac_0" srcPort="in_channel_18" dstActor="ifft_1" dstPort="out_channel_18" size="0" initialTokens="0"/>
+   <channel name="channel_19" srcActor="cwac_0" srcPort="in_channel_19" dstActor="ifft_2" dstPort="out_channel_19" size="0" initialTokens="0"/>
+   <channel name="channel_20" srcActor="cwac_0" srcPort="in_channel_20" dstActor="ifft_3" dstPort="out_channel_20" size="0" initialTokens="0"/>
+   <channel name="channel_21" srcActor="cwac_1" srcPort="in_channel_21" dstActor="ifft_0" dstPort="out_channel_21" size="0" initialTokens="0"/>
+   <channel name="channel_22" srcActor="cwac_1" srcPort="in_channel_22" dstActor="ifft_1" dstPort="out_channel_22" size="0" initialTokens="0"/>
+   <channel name="channel_23" srcActor="cwac_1" srcPort="in_channel_23" dstActor="ifft_2" dstPort="out_channel_23" size="0" initialTokens="0"/>
+   <channel name="channel_24" srcActor="cwac_1" srcPort="in_channel_24" dstActor="ifft_3" dstPort="out_channel_24" size="0" initialTokens="0"/>
+   <channel name="channel_25" srcActor="cwac_2" srcPort="in_channel_25" dstActor="ifft_0" dstPort="out_channel_25" size="0" initialTokens="0"/>
+   <channel name="channel_26" srcActor="cwac_2" srcPort="in_channel_26" dstActor="ifft_1" dstPort="out_channel_26" size="0" initialTokens="0"/>
+   <channel name="channel_27" srcActor="cwac_2" srcPort="in_channel_27" dstActor="ifft_2" dstPort="out_channel_27" size="0" initialTokens="0"/>
+   <channel name="channel_28" srcActor="cwac_2" srcPort="in_channel_28" dstActor="ifft_3" dstPort="out_channel_28" size="0" initialTokens="0"/>
+   <channel name="channel_29" srcActor="cwac_3" srcPort="in_channel_29" dstActor="ifft_0" dstPort="out_channel_29" size="0" initialTokens="0"/>
+   <channel name="channel_30" srcActor="cwac_3" srcPort="in_channel_30" dstActor="ifft_1" dstPort="out_channel_30" size="0" initialTokens="0"/>
+   <channel name="channel_31" srcActor="cwac_3" srcPort="in_channel_31" dstActor="ifft_2" dstPort="out_channel_31" size="0" initialTokens="0"/>
+   <channel name="channel_32" srcActor="cwac_3" srcPort="in_channel_32" dstActor="ifft_3" dstPort="out_channel_32" size="0" initialTokens="0"/>
+   <channel name="channel_33" srcActor="ifft_0" srcPort="in_channel_33" dstActor="dd_0" dstPort="out_channel_33" size="0" initialTokens="0"/>
+   <channel name="channel_34" srcActor="ifft_0" srcPort="in_channel_34" dstActor="dd_1" dstPort="out_channel_34" size="0" initialTokens="0"/>
+   <channel name="channel_35" srcActor="ifft_0" srcPort="in_channel_35" dstActor="dd_2" dstPort="out_channel_35" size="0" initialTokens="0"/>
+   <channel name="channel_36" srcActor="ifft_0" srcPort="in_channel_36" dstActor="dd_3" dstPort="out_channel_36" size="0" initialTokens="0"/>
+   <channel name="channel_37" srcActor="ifft_1" srcPort="in_channel_37" dstActor="dd_0" dstPort="out_channel_37" size="0" initialTokens="0"/>
+   <channel name="channel_38" srcActor="ifft_1" srcPort="in_channel_38" dstActor="dd_1" dstPort="out_channel_38" size="0" initialTokens="0"/>
+   <channel name="channel_39" srcActor="ifft_1" srcPort="in_channel_39" dstActor="dd_2" dstPort="out_channel_39" size="0" initialTokens="0"/>
+   <channel name="channel_40" srcActor="ifft_1" srcPort="in_channel_40" dstActor="dd_3" dstPort="out_channel_40" size="0" initialTokens="0"/>
+   <channel name="channel_41" srcActor="ifft_2" srcPort="in_channel_41" dstActor="dd_0" dstPort="out_channel_41" size="0" initialTokens="0"/>
+   <channel name="channel_42" srcActor="ifft_2" srcPort="in_channel_42" dstActor="dd_1" dstPort="out_channel_42" size="0" initialTokens="0"/>
+   <channel name="channel_43" srcActor="ifft_2" srcPort="in_channel_43" dstActor="dd_2" dstPort="out_channel_43" size="0" initialTokens="0"/>
+   <channel name="channel_44" srcActor="ifft_2" srcPort="in_channel_44" dstActor="dd_3" dstPort="out_channel_44" size="0" initialTokens="0"/>
+   <channel name="channel_45" srcActor="ifft_3" srcPort="in_channel_45" dstActor="dd_0" dstPort="out_channel_45" size="0" initialTokens="0"/>
+   <channel name="channel_46" srcActor="ifft_3" srcPort="in_channel_46" dstActor="dd_1" dstPort="out_channel_46" size="0" initialTokens="0"/>
+   <channel name="channel_47" srcActor="ifft_3" srcPort="in_channel_47" dstActor="dd_2" dstPort="out_channel_47" size="0" initialTokens="0"/>
+   <channel name="channel_48" srcActor="ifft_3" srcPort="in_channel_48" dstActor="dd_3" dstPort="out_channel_48" size="0" initialTokens="0"/>
+   <channel name="Rmiwf_0" srcActor="miwf_0" srcPort="in_Rmiwf_0" dstActor="miwf_0" dstPort="out_Rmiwf_0" size="1" initialTokens="1"/>
+   <channel name="Rmiwf_1" srcActor="miwf_1" srcPort="in_Rmiwf_1" dstActor="miwf_1" dstPort="out_Rmiwf_1" size="1" initialTokens="1"/>
+   <channel name="Rmiwf_2" srcActor="miwf_2" srcPort="in_Rmiwf_2" dstActor="miwf_2" dstPort="out_Rmiwf_2" size="1" initialTokens="1"/>
+   <channel name="Rmiwf_3" srcActor="miwf_3" srcPort="in_Rmiwf_3" dstActor="miwf_3" dstPort="out_Rmiwf_3" size="1" initialTokens="1"/>
+   <channel name="Rcwac_0" srcActor="cwac_0" srcPort="in_Rcwac_0" dstActor="cwac_0" dstPort="out_Rcwac_0" size="1" initialTokens="1"/>
+   <channel name="Rcwac_1" srcActor="cwac_1" srcPort="in_Rcwac_1" dstActor="cwac_1" dstPort="out_Rcwac_1" size="1" initialTokens="1"/>
+   <channel name="Rcwac_2" srcActor="cwac_2" srcPort="in_Rcwac_2" dstActor="cwac_2" dstPort="out_Rcwac_2" size="1" initialTokens="1"/>
+   <channel name="Rcwac_3" srcActor="cwac_3" srcPort="in_Rcwac_3" dstActor="cwac_3" dstPort="out_Rcwac_3" size="1" initialTokens="1"/>
+   <channel name="Rifft_0" srcActor="ifft_0" srcPort="in_Rifft_0" dstActor="ifft_0" dstPort="out_Rifft_0" size="1" initialTokens="1"/>
+   <channel name="Rifft_1" srcActor="ifft_1" srcPort="in_Rifft_1" dstActor="ifft_1" dstPort="out_Rifft_1" size="1" initialTokens="1"/>
+   <channel name="Rifft_2" srcActor="ifft_2" srcPort="in_Rifft_2" dstActor="ifft_2" dstPort="out_Rifft_2" size="1" initialTokens="1"/>
+   <channel name="Rifft_3" srcActor="ifft_3" srcPort="in_Rifft_3" dstActor="ifft_3" dstPort="out_Rifft_3" size="1" initialTokens="1"/>
+   <channel name="Rdd_0" srcActor="dd_0" srcPort="in_Rdd_0" dstActor="dd_0" dstPort="out_Rdd_0" size="1" initialTokens="1"/>
+   <channel name="Rdd_1" srcActor="dd_1" srcPort="in_Rdd_1" dstActor="dd_1" dstPort="out_Rdd_1" size="1" initialTokens="1"/>
+   <channel name="Rdd_2" srcActor="dd_2" srcPort="in_Rdd_2" dstActor="dd_2" dstPort="out_Rdd_2" size="1" initialTokens="1"/>
+   <channel name="Rdd_3" srcActor="dd_3" srcPort="in_Rdd_3" dstActor="dd_3" dstPort="out_Rdd_3" size="1" initialTokens="1"/>
+  </csdf>
+  <csdfProperties>
+   <actorProperties actor="miwf_0">
+    <processor type="cluster_0" default="true">
+     <executionTime time="392504"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="miwf_1">
+    <processor type="cluster_0" default="true">
+     <executionTime time="392504"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="miwf_2">
+    <processor type="cluster_0" default="true">
+     <executionTime time="392504"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="miwf_3">
+    <processor type="cluster_0" default="true">
+     <executionTime time="392504"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="cwac_0">
+    <processor type="cluster_0" default="true">
+     <executionTime time="230635"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="cwac_1">
+    <processor type="cluster_0" default="true">
+     <executionTime time="230635"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="cwac_2">
+    <processor type="cluster_0" default="true">
+     <executionTime time="230635"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="cwac_3">
+    <processor type="cluster_0" default="true">
+     <executionTime time="230635"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="ifft_0">
+    <processor type="cluster_0" default="true">
+     <executionTime time="353448"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="ifft_1">
+    <processor type="cluster_0" default="true">
+     <executionTime time="353448"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="ifft_2">
+    <processor type="cluster_0" default="true">
+     <executionTime time="353448"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="ifft_3">
+    <processor type="cluster_0" default="true">
+     <executionTime time="353448"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="dd_0">
+    <processor type="cluster_0" default="true">
+     <executionTime time="267559"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="dd_1">
+    <processor type="cluster_0" default="true">
+     <executionTime time="267559"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="dd_2">
+    <processor type="cluster_0" default="true">
+     <executionTime time="267559"/>
+    </processor>
+   </actorProperties>
+   <actorProperties actor="dd_3">
+    <processor type="cluster_0" default="true">
+     <executionTime time="267559"/>
+    </processor>
+   </actorProperties>
+  </csdfProperties>
+ </applicationGraph>
+</sdf3>

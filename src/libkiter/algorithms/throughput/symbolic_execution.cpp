@@ -221,8 +221,8 @@ TIME_UNIT algorithms::computeComponentThroughput(models::Dataflow* const dataflo
       actorMap[dataflow->getVertexId(t)] = Actor(dataflow, t);
       VERBOSE_INFO("\n");
     }}
-  State prevState(dataflow, actorMap);
-  State currState(dataflow, actorMap);
+  State prevState(dataflow, actorMap, {});
+  State currState(dataflow, actorMap, {});
   VERBOSE_INFO("Printing initial state status");
   VERBOSE_INFO(prevState.print(dataflow));
   VERBOSE_INFO("Printing actor statuses:");
@@ -267,7 +267,7 @@ TIME_UNIT algorithms::computeComponentThroughput(models::Dataflow* const dataflo
             }
           }
           actorMap[dataflow->getVertexId(t)].execEnd(dataflow, currState);
-          currState.updateState(dataflow, actorMap); // NOTE updating tokens/phase in state done separately from execEnd function, might be a cause for bugs
+          currState.updateState(dataflow, actorMap, {}); // NOTE updating tokens/phase in state done separately from execEnd function, might be a cause for bugs
         }
       }}
     VERBOSE_INFO("Printing current state status after ending firing");
@@ -381,9 +381,9 @@ kperiodic_result_t algorithms::computeComponentThroughputCycles(models::Dataflow
     VERBOSE_INFO(printStatus(dataflow, currState));
     // start actor firing
     {ForEachTask(dataflow, t) {
-        while (actorMap[dataflow->getVertexId(t)].isReadyForExec(currState)) {
+        while (actorMap[dataflow->getVertexId(t)].isReadyForExec(currState, {})) {
           actorMap[dataflow->getVertexId(t)].execStart(dataflow, currState);
-          currState.updateState(dataflow, actorMap);
+          currState.updateState(dataflow, actorMap, {});
         }
       }}
     VERBOSE_INFO("Printing Current State Status");
@@ -604,8 +604,8 @@ std::pair<TIME_UNIT, scheduling_t> algorithms::computeComponentThroughputSchedul
       actorMap[dataflow->getVertexId(t)] = Actor(dataflow, t);
       VERBOSE_INFO("\n");
     }}
-  State prevState(dataflow, actorMap);
-  State currState(dataflow, actorMap);
+  State prevState(dataflow, actorMap, {});
+  State currState(dataflow, actorMap, {});
   VERBOSE_INFO("Printing initial state status");
   VERBOSE_INFO(prevState.print(dataflow));
   VERBOSE_INFO("Printing actor statuses:");
@@ -659,7 +659,7 @@ std::pair<TIME_UNIT, scheduling_t> algorithms::computeComponentThroughputSchedul
             }
           }
           actorMap[dataflow->getVertexId(t)].execEnd(dataflow, currState);
-          currState.updateState(dataflow, actorMap); // NOTE updating tokens/phase in state done separately from execEnd function, might be a cause for bugs
+          currState.updateState(dataflow, actorMap, {}); // NOTE updating tokens/phase in state done separately from execEnd function, might be a cause for bugs
         }
       }}
     VERBOSE_INFO("Printing current state status after ending firing");
@@ -671,9 +671,9 @@ std::pair<TIME_UNIT, scheduling_t> algorithms::computeComponentThroughputSchedul
     VERBOSE_INFO(printStatus(dataflow, currState));
     // start actor firing
     {ForEachTask(dataflow, t) {
-        while (actorMap[dataflow->getVertexId(t)].isReadyForExec(currState)) {
+        while (actorMap[dataflow->getVertexId(t)].isReadyForExec(currState, {})) {
           actorMap[dataflow->getVertexId(t)].execStart(dataflow, currState);
-          currState.updateState(dataflow, actorMap);
+          currState.updateState(dataflow, actorMap, {});
 
           if (end_check){
             if (actors_check[dataflow->getVertexId(t)] < 0){
@@ -688,6 +688,10 @@ std::pair<TIME_UNIT, scheduling_t> algorithms::computeComponentThroughputSchedul
                 for(std::size_t i = 0; i < starts[dataflow->getVertexId(task)].size(); ++i){
                   if (i < periodic_state_idx){ //initials
                     initials.insert(initials.end(),starts[dataflow->getVertexId(task)][i].begin(),starts[dataflow->getVertexId(task)][i].end());
+                    continue;
+                  } 
+                  if (i == starts[dataflow->getVertexId(task)].size() - 1){
+                    periodics.second.insert(periodics.second.end(),starts[dataflow->getVertexId(task)][i].begin(),starts[dataflow->getVertexId(task)][i].end()-1);
                   } else { //periodic
                     periodics.second.insert(periodics.second.end(),starts[dataflow->getVertexId(task)][i].begin(),starts[dataflow->getVertexId(task)][i].end());
                   }
@@ -697,8 +701,6 @@ std::pair<TIME_UNIT, scheduling_t> algorithms::computeComponentThroughputSchedul
                 schedule.set(dataflow->getVertexId(task), sched_struct);
                 std::cout << dataflow->getVertexName(task) << ": initial starts=" << commons::toString(initials) << ", periodic starts=" << commons::toString(periodics) << std::endl;
               }}
-              std::string separator(60, '-');
-              std::cout << separator << std::endl;
               return std::make_pair(thr, schedule);
             }
 
@@ -789,8 +791,6 @@ void algorithms::scheduling::ASAPScheduling(models::Dataflow* const dataflow,
 
     TIME_UNIT omega = 1.0 / minThroughput ;
     models::Scheduling res = models::Scheduling(dataflow, omega, scheduling_result);
-
-
 
     std::cout << res.asASCII(linesize);
     std::cout << res.asText();

@@ -1,0 +1,15 @@
+benchmarks/ascenttestbench/one_h263decoder.xml :
+ASAPScheduling : 0.0001 , 0.0001, 0.0001
+So4Scheduling : 2.11703 , 2.11703, 2.11703
+benchmarks/ascenttestbench/one_modem.xml :
+ASAPScheduling : 0.0625 , 0.0625, 0.0625
+So4Scheduling : 0.00420168 , 0.00420168, 0.00446429
+benchmarks/ascenttestbench/one_mp3decoder.xml :
+ASAPScheduling : 0.00757576 , 0.00757576, 0.00757576
+So4Scheduling : 0.00297619 , 0.00297619, 0.00297619
+benchmarks/ascenttestbench/one_samplerate.xml :
+ASAPScheduling : 0.00104167 , 0.00104167, 0.00104167
+So4Scheduling : 0.000341763 , 0.000341763, 0.000340136
+benchmarks/ascenttestbench/one_satellite.xml :
+ASAPScheduling : 0.00094697 , 0.00094697, 0.00094697
+So4Scheduling : 0.000135281 , 0.000135281, 0.000135281

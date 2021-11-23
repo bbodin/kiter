@@ -12,8 +12,7 @@
 using namespace models;
 
 
-
-bool algorithms::check_validity(models::Dataflow *from, std::map<Vertex,TOKEN_UNIT> *  normalization ) {
+bool algorithms::check_validity (models::Dataflow *from, std::map<Vertex,TOKEN_UNIT> *  normalization ) {
 
     if (!normalization) return false;
 
@@ -120,7 +119,6 @@ bool algorithms::check_validity(models::Dataflow *from, std::map<Vertex,TOKEN_UN
                //DATA_UNIT OVERFLOW
            }
 
-
            if (result_i.numerator()  !=  result_j.numerator() ) return false;
 
         }
@@ -171,8 +169,6 @@ bool algorithms::check_validity(models::Dataflow *from, std::map<Vertex,TOKEN_UN
 
            if (result_i.numerator()  !=  result_j.numerator() ) return false;
         }
-
-
 
     }}
 
@@ -227,10 +223,16 @@ bool algorithms::setNormalization(models::Dataflow *to, std::map<Vertex,TOKEN_UN
 
 std::map<Vertex,TOKEN_UNIT> * algorithms::rationalNormalize(models::Dataflow *from ) {
 
-    if (from->getEdgesCount() <= 0 ) return NULL;
+    if (from->getEdgesCount() <= 0 ) {
+
+        std::map<Vertex,TOKEN_UNIT> * res = new  std::map<Vertex,TOKEN_UNIT>();
+        {ForEachVertex(from,v) {
+        	(*res)[v] = 1;
+        }}
+    	return res;
+    }
 
     VERBOSE_INFO("Start Rational normalization...");
-
 
     std::map<Edge,TOKEN_FRACT> alphas; //! Liste des alphas (coefficient multiplicateur de normalisation)
 
@@ -436,7 +438,7 @@ std::map<Vertex,TOKEN_UNIT> * algorithms::rationalNormalize(models::Dataflow *fr
 
 }
 
-bool algorithms::normalize(models::Dataflow *from) {
+bool algorithms::normalize (models::Dataflow *from) {
 
 	if (from->is_normalized()) return true;
 

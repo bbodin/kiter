@@ -25,17 +25,17 @@ namespace algorithms {
 
 bool sameset(const models::Dataflow* const dataflow, std::set<Edge> *cc1 , std::set<Edge>* cc2) ;
 std::string cc2string  (const models::Dataflow* const dataflow,std::set<Edge>* cc) ;
-models::EventGraph* generateKPeriodicEventGraph(const models::Dataflow * const dataflow, std::map<Vertex,EXEC_COUNT> * kvector  );
+models::EventGraph* generateKPeriodicEventGraph(const models::Dataflow * const dataflow, const periodicity_vector_t * kValues );
 
-std::string print_schedule (models::EventGraph* eg, models::Dataflow* const  dataflow,  std::map<Vertex,EXEC_COUNT> & kvector , TIME_UNIT res ) ;
+std::string print_schedule (models::EventGraph* eg, models::Dataflow* const  dataflow,  const periodicity_vector_t & kvector , TIME_UNIT res ) ;
 
     void print_kperiodic_scheduling         (models::Dataflow* const  dataflow, parameters_list_t);
   void generateKperiodicSelfloop(const models::Dataflow * const dataflow , EXEC_COUNT ki, models::EventGraph* g  , Vertex t  );
 
-  void generateKPeriodicConstraint(const models::Dataflow * const dataflow , std::map<Vertex,EXEC_COUNT> * kValues,  models::EventGraph* g, Edge c) ;
+  void generateKPeriodicConstraint(const models::Dataflow * const dataflow , const periodicity_vector_t * kValues,  models::EventGraph* g, Edge c) ;
 
-  models::EventGraph*  updateEventGraph(const  models::Dataflow * const dataflow , std::map<Vertex,EXEC_COUNT> * kvector, std::set<Edge>* cc, models::EventGraph* g) ;
- models::EventGraph*  generateCycleOnly(models::Dataflow * const dataflow , std::map<Vertex,EXEC_COUNT> * kValues,   std::set<Edge> * cc );
+  models::EventGraph*  updateEventGraph(const  models::Dataflow * const dataflow ,  periodicity_vector_t * kvector, std::set<Edge>* cc, models::EventGraph* g) ;
+ models::EventGraph*  generateCycleOnly(models::Dataflow * const dataflow , const periodicity_vector_t * kValues,   std::set<Edge> * cc );
 
 void                compute_Kperiodic_throughput              (models::Dataflow *  const , parameters_list_t);
 
@@ -44,11 +44,11 @@ void                compute_Kperiodic_throughput              (models::Dataflow 
     void                compute_NKperiodic_throughput             (models::Dataflow* const  dataflow, parameters_list_t);
     void                compute_GKperiodic_throughput  		      (models::Dataflow* const  dataflow, parameters_list_t);
 
-    kperiodic_result_t KSchedule             (models::Dataflow *  const ,std::map<Vertex,EXEC_COUNT> * kvector  , TIME_UNIT bound = 0) ;
-    kperiodic_result_t KScheduleBufferLess   (models::Dataflow *  const ,std::map<Vertex,EXEC_COUNT> * kvector  , TIME_UNIT bound = 0) ;
+    kperiodic_result_t KSchedule             (models::Dataflow *  const ,const periodicity_vector_t * kvector  , TIME_UNIT bound = 0) ;
+    kperiodic_result_t KScheduleBufferLess   (models::Dataflow *  const ,const periodicity_vector_t * kvector  , TIME_UNIT bound = 0) ;
 
-    bool                                     updateVectorWithLocalNi  (const models::Dataflow *  const  ,std::map<Vertex,EXEC_COUNT> *  , std::set<Edge> * ) ;
-    bool 									 updateVectorWithFineNi   (models::Dataflow * const   , std::map<Vertex,EXEC_COUNT> * , std::set<Edge>*  );
+    bool                                     updateVectorWithLocalNi  (const models::Dataflow *  const  , periodicity_vector_t *  , std::set<Edge> * ) ;
+    bool 									 updateVectorWithFineNi   (models::Dataflow * const   ,  periodicity_vector_t * , std::set<Edge>*  );
 
 }
 ADD_TRANSFORMATION(KPeriodicThroughput,

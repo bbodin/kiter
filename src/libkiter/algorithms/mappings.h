@@ -28,7 +28,7 @@ namespace algorithms {
 		void BufferlessNoCMapAndRoute (models::Dataflow* const  dataflow, parameters_list_t params);
 		void xyRouting (models::Dataflow* const  dataflow, parameters_list_t params);
 		void randomRouting (models::Dataflow* const  dataflow, parameters_list_t params);
-
+		void generateTDMA (models::Dataflow* const  dataflow, parameters_list_t params);
 	}
 
 	void ModelNoCConflictFreeCommunication(models::Dataflow* const  dataflow, parameters_list_t   param_list = parameters_list_t());
@@ -42,6 +42,9 @@ ADD_TRANSFORMATION(createNoC,
 );
 ADD_TRANSFORMATION(randomMapping,
 		transformation_t({ "randomMapping" , "This command will associate a mapping to each task of the graph. Task unspecified as parameters will be randomly allocated to a core.", algorithms::mapping::randomMapping} )
+);
+ADD_TRANSFORMATION(generateTDMA,
+		transformation_t({ "generateTDMA" , "Change seed.", algorithms::mapping::generateTDMA} )
 );
 ADD_TRANSFORMATION(moduloMapping,
 		transformation_t({ "moduloMapping" , "This command will associate a mapping to each task of the graph. Task unspecified as parameters will be randomly allocated to a core.", algorithms::mapping::moduloMapping} )

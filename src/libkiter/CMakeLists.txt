@@ -106,10 +106,8 @@ TARGET_LINK_LIBRARIES  (libkiter PUBLIC
 if(GUROBI_FOUND)
     message(STATUS "GUROBI FOUND")
     
-	ADD_LIBRARY		(kiter_gurobi_lp STATIC  ${lp_sources})
-	TARGET_LINK_LIBRARIES   (kiter_gurobi_lp PUBLIC   kiter_commons )
-
-
+	ADD_LIBRARY		          (kiter_gurobi_lp STATIC  ${lp_sources})
+	TARGET_LINK_LIBRARIES     (kiter_gurobi_lp PUBLIC   kiter_commons )
     target_include_directories(kiter_gurobi_lp PUBLIC ${GUROBI_INCLUDE_DIRS})
 
 	if(GLPK_FOUND)

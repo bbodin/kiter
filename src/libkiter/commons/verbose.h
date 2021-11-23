@@ -11,6 +11,7 @@
 
 #include <set>
 #include <iostream>
+#include <stdexcept>
 
 #define TXT_NO_IMPLEMENTATION "FIXME"
 #define TXT_NEVER_HAPPEND     "Internal error"
@@ -49,7 +50,7 @@ const int  MAX_LEVEL     =  10;
 
 const int  ERROR_LEVEL         =   1;
 const int  WARNING_LEVEL       =   2;
-const int  PB_LEVEL 	       =   3;
+const int  PB_LEVEL 	         =   3;
 const int  INFO_LEVEL          =   4;
 const int  ILP_LEVEL           =   7;
 const int  DEBUG_LEVEL         =   8;
@@ -83,9 +84,9 @@ const inline std::string _verbosegetFilename(const std::string s) { return s.sub
 #define __SHOW_LEVEL "[ "<< __RELEASE__ <<"  " << _verbosegetFilename(__FILE__) << ":" << __LINE__ << "]" << RESET_COLOR << " "
 
 #ifdef __RELEASE_MODE__
-#define EXIT_ON_FAILURE()  /*int* toto = NULL; *toto = 1;*/ exit(EXIT_FAILURE)
+#define EXIT_ON_FAILURE(msg)  /*int* toto = NULL; *toto = 1;*/ exit(EXIT_FAILURE)
 #else
-#define EXIT_ON_FAILURE()  {int* toto = NULL; *toto = 1;} exit(EXIT_FAILURE)
+#define EXIT_ON_FAILURE(msg)  {throw new std::runtime_error(msg);} exit(EXIT_FAILURE)
 
 #endif
 
@@ -134,13 +135,13 @@ static inline bool  VERBOSE_IS_ILP()                     { return (commons::VERB
 
 
 #ifndef __RELEASE_MODE__
-#define VERBOSE_BAD_PROGRAMMING() {VERBOSE_ERROR("Internal Error"); VERBOSE_BACKTRACE(); std::cerr << std::flush; EXIT_ON_FAILURE();}
+#define VERBOSE_BAD_PROGRAMMING() {VERBOSE_ERROR("Internal Error"); VERBOSE_BACKTRACE(); std::cerr << std::flush; EXIT_ON_FAILURE("Internal Error");}
 #else
-#define VERBOSE_BAD_PROGRAMMING() {VERBOSE_ERROR("Internal Error"); VERBOSE_BACKTRACE(); std::cerr << std::flush; EXIT_ON_FAILURE();}
+#define VERBOSE_BAD_PROGRAMMING() {VERBOSE_ERROR("Internal Error"); VERBOSE_BACKTRACE(); std::cerr << std::flush; EXIT_ON_FAILURE("Internal Error");}
 #endif
 #define ERROR()             VERBOSE_BAD_PROGRAMMING();
 #define VERBOSE_FAILURE()   VERBOSE_BAD_PROGRAMMING();
-#define FAILED(MESSAGE)     {VERBOSE_ERROR(MESSAGE); std::cerr << std::flush; VERBOSE_BACKTRACE(); EXIT_ON_FAILURE();}
+#define FAILED(MESSAGE)     {VERBOSE_ERROR(MESSAGE); std::cerr << std::flush; VERBOSE_BACKTRACE(); EXIT_ON_FAILURE(MESSAGE);}
 
 #define VERBOSE_BACKTRACE() commons::print_trace(__FILE__,__LINE__);
 

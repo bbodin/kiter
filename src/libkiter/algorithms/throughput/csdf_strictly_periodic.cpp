@@ -12,13 +12,14 @@
 #include "csdf_strictly_periodic.h"
 #include <numeric>
 
-models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(const models::Dataflow * const dataflow, bool use_max_duration) {
+models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph (const models::Dataflow * const dataflow, bool use_max_duration) {
+	
 	models::EventGraph* eg = new models::EventGraph();
 
 	std::map<ARRAY_INDEX,models::SchedulingEvent> tid2event;
 
 	// we define only one start per task
-	for (auto t : dataflow->vertices()) {
+	for (auto t : dataflow->vertices()){
 		auto tid = dataflow->getVertexId(t);
 		tid2event.insert({tid, models::SchedulingEvent(dataflow->getVertexId(t))});
 		eg->addEvent(tid2event.at(tid));
@@ -28,7 +29,6 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 		TIME_UNIT d = *std::max_element(exec_times.begin(), exec_times.end());
 		models::SchedulingEventConstraint sec (tid2event.at(tid), tid2event.at(tid),  w, d, tid);
 		eg->addEventConstraint(sec);
-
 	}
 
 	for (auto t : dataflow->vertices()) {
@@ -39,8 +39,6 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 
 
 		// for each task we look at different timings bags
-
-
 		auto phit = dataflow->getPhasesQuantity(t);
 		std::map <TIME_UNIT, std::vector<EXEC_COUNT>> delta_l_t;
 
@@ -56,7 +54,6 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 		EXEC_COUNT ni = dataflow->getNi(t) / phit;
 
 		// for each timings bag, and for each output buffers we add a constraint
-
 		for (auto item : delta_l_t) { // only one constraint required here
 
 			std::vector<EXEC_COUNT> ks = item.second;
@@ -85,17 +82,14 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 
 				EXEC_COUNT nj = dataflow->getNi(tp) / phitp;
 
-
 				VERBOSE_DEBUG("*** NI=" << ni << " phit=" << phit << " ia=" << ia << " ia*ni=" << ia * ni);
 				VERBOSE_DEBUG("*** NJ=" << nj << " phitp=" << phitp << " oa=" << oa << " oa*nj=" << oa * nj);
 
-
-
 				VERBOSE_ASSERT (ia * ni == oa * nj, "Repetition vector doesnt match expected definition");
+
 
 				for (auto k : ks) {
 					for (auto kp = 1 ; kp <= phitp; kp++) {
-
 
 						// alphaMin <= alphaMax test
 						TOKEN_UNIT iapm1 = 0 ; for (int p = 1; p  < k ; p++ ) {iapm1 += dataflow->getEdgeInPhase(c, p);}
@@ -110,7 +104,6 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 						auto tw = alphamax_k_kp - ((TIME_UNIT)((kp - 1) * oa) / (TIME_UNIT) phitp) + ((TIME_UNIT) ((k - 1) * ia) / (TIME_UNIT) phit) ;
 						auto nw =   (TIME_UNIT) tw / ( (TIME_UNIT) ia  * (TIME_UNIT) ni);
 
-
 						VERBOSE_DEBUG ("k=" << k << " kp=" << kp );
 						VERBOSE_DEBUG (" ia=" << ia << " oa=" << oa<< " phit=" << phit<< " phitp=" << phitp);
 						VERBOSE_DEBUG (" alphamax_k_kp=" << alphamin_k_kp  << " alphamax_k_kp=" << alphamax_k_kp );
@@ -124,7 +117,6 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 
 							w = std::max ( w , nw )  ;
 						}
-
 					}
 				}
 
@@ -140,7 +132,6 @@ models::EventGraph* algorithms::generate_csdf_strictly_periodic_event_graph(cons
 
 		}
 	}
-
 
 	return eg;
 }
@@ -165,8 +156,8 @@ void algorithms::compute_SPeriodic_throughput    (models::Dataflow*  dataflow, p
 	std::cout << "SPeriodic throughput is "  << std::setw( 20 ) << std::setprecision( 9 ) <<     res    << std::endl;
 	std::cout << "SPeriodic period     is " << std::fixed      << std::setw( 20 ) << std::setprecision( 6 ) << 1.0/res    << std::endl;
 
-
 }
+
 
 void algorithms::compute_ASPeriodic_throughput    (models::Dataflow*  dataflow, parameters_list_t params) {
 	VERBOSE_ASSERT(computeRepetitionVector(dataflow), "Repetition vector failed.");
@@ -187,7 +178,5 @@ void algorithms::compute_ASPeriodic_throughput    (models::Dataflow*  dataflow, 
 
 	std::cout << "SPeriodic throughput is "  << std::setw( 20 ) << std::setprecision( 9 ) <<     res    << std::endl;
 	std::cout << "SPeriodic period     is " << std::fixed      << std::setw( 20 ) << std::setprecision( 6 ) << 1.0/res    << std::endl;
-
-
 }
 

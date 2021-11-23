@@ -34,7 +34,7 @@
 
 /* Dataflow defintion */
 
-enum EDGE_TYPE   {NORMAL_EDGE, BUFFERLESS_EDGE};
+enum EDGE_TYPE   {NORMAL_EDGE, BUFFERLESS_EDGE, VIRTUAL_EDGE};
 //enum VERTEX_TYPE {NORMAL_VERTEX, PERIODIC_VERTEX};
 
 typedef  std::string VERTEX_TYPE;
@@ -293,8 +293,8 @@ public:
 
 
 protected:
-	inline        BoostDataflow& 			getG				()						{return this->g;}
-	inline  const BoostDataflow& 			getG				()			const		{return this->g;}
+	inline        BoostDataflow& 	getG				()						{return this->g;}
+	inline  const BoostDataflow& 	getG				()			const		{return this->g;}
 
 
 public :
@@ -420,7 +420,7 @@ inline  Vertex                addUnsafeVertex         (const ARRAY_INDEX id)    
 
 public :
 	inline  const boost::integer_range<VertexD>             vertices()        const { return this->getG().vertex_set() ;} // This function is added because it can be used with foreach.
-	inline  const boost::integer_range<Edge::iterator>               edges()           const {
+	inline  const boost::integer_range<Edge::iterator>      edges()           const {
 		const std::pair<Edge::iterator,Edge::iterator> mypair = boost::edges(this->getG());
 		return boost::integer_range<Edge::iterator>(mypair.first, mypair.second);
 		//return this->getG().vertex_set() ;
@@ -442,8 +442,8 @@ public :
 
 public :
     inline  Vertex                  getFirstVertex      ()                   const    {return *(this->getVertices().first);}
-	inline 	ARRAY_INDEX 					getVertexId			(const Vertex t)	const	{return boost::get(get(boost::vertex_index2, this->getG()), t.v); }
-	inline 	ARRAY_INDEX 					getEdgeId			(const Edge c)		const	{return boost::get(get(boost::edge_index, this->getG()), c.e);}
+	inline 	ARRAY_INDEX 			getVertexId			(const Vertex t)	const	{return boost::get(get(boost::vertex_index2, this->getG()), t.v); }
+	inline 	ARRAY_INDEX 			getEdgeId			(const Edge c)		const	{return boost::get(get(boost::edge_index, this->getG()), c.e);}
 
 
 	inline	Vertex					getVertexById		(const ARRAY_INDEX id) const	{
@@ -518,10 +518,10 @@ public:
 
 
 public :
-    inline  ARRAY_INDEX         getMaxEdgeId ()                  const     {return auto_edge_num; }
-    inline  ARRAY_INDEX         getMaxVertexId    ()            const           {return auto_vertex_num; }
+    inline  ARRAY_INDEX         getMaxEdgeId 	()      const     		{return auto_edge_num; }
+    inline  ARRAY_INDEX         getMaxVertexId  ()      const           {return auto_vertex_num; }
     inline  void                setVertexName   (const Vertex t,
-                                                 const std::string name)    {
+                                                 const std::string name){
     	ASSERT_WRITABLE();
     	reset_computation();
     	VERBOSE_ASSERT(name != "", "Empty name is not permit for vertex.");
@@ -533,7 +533,7 @@ public :
     	}
     	boost::put(boost::vertex_name, this->getG(), t.v, name);
     }
-    /**
+    /*
      * TODO: Be careful tasks can be unamed from now.
      */
     inline  const std::string   getVertexName   (const Vertex t)      const {

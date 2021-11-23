@@ -108,15 +108,15 @@ bool operator<(const node& a, const node& b) {
 			return cyclen_per_vtxid[a.index][i] < cyclen_per_vtxid[b.index][i];
 	}
 
-	if(alen == 0)
+	if (alen == 0)
 		return true;
-	if(blen == 0)
+	if (blen == 0)
 		return false;
 	return false;
 }
 
 
-std::vector<ARRAY_INDEX> symbolic_execution(models::Dataflow* const  from) {
+std::vector<ARRAY_INDEX> symbolic_execution (models::Dataflow* const from) {
 
 	std::vector<ARRAY_INDEX> prog_order;
 	// Need RV.
@@ -300,7 +300,7 @@ void DFS(models::Dataflow* to, Vertex v)
 }
 
 
-void my_dfs(models::Dataflow* adj, Vertex node, std::vector<bool> visited, Vertex start, std::vector<unsigned int>& path, std::set<unsigned int>& cycleids)
+void my_dfs (models::Dataflow* adj, Vertex node, std::vector<bool> visited, Vertex start, std::vector<unsigned int>& path, std::set<unsigned int>& cycleids)
 {
 	auto node_id = adj->getVertexId(node);
 	if (visited[node_id])

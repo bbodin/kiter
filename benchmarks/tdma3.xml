@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdma slots="3">
+	<rule id="0" src="1" dest="2" slot="1"/>
+	<rule id="1" src="1" dest="4" slot="3"/>
+	<rule id="2" src="2" dest="3" slot="0"/>
+	<rule id="3" src="3" dest="1" slot="2"/>
+	<rule id="4" src="4" dest="3" slot="1"/>
+</tdma>

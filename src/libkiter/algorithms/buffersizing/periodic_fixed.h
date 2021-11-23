@@ -11,9 +11,11 @@
 #include <commons/KiterRegistry.h>
 #include <models/Dataflow.h>
 #include <algorithms/buffersizing.h>
+#include <vector>
 
 namespace models {
 	class EventGraph;
+        class Dataflow;
 }
 
 namespace algorithms {
@@ -31,24 +33,18 @@ namespace algorithms {
     BufferSizingResult compute_periodic_fixed_memory(models::Dataflow* const  dataflow, std::map<Vertex,std::vector<TIME_UNIT> > & res,  TIME_UNIT PERIOD , bool ilp_solving , bool gen_only);
 
     void compute_strictly_periodic_memory(models::Dataflow* const  dataflow, parameters_list_t params);
-    void compute_burst_memory(models::Dataflow* const  dataflow, parameters_list_t params);
-    void compute_average_memory(models::Dataflow* const  dataflow, parameters_list_t params);
-    void compute_minmax_memory(models::Dataflow* const  dataflow, parameters_list_t params);
-    void compute_wiggers_memory(models::Dataflow* const  dataflow, parameters_list_t params);
+    void compute_fixed_offset_buffer_sizing (models::Dataflow* const dataflow, parameters_list_t params);
 
+    void add_vbuffers (models::Dataflow* const  dataflow, parameters_list_t params);
 
 } // end of namespace algorithms
 
 //Buffer sizing techniques
 ADD_TRANSFORMATION(SPeriodicSizing,
 transformation_t({ "SPeriodicSizing" , "Minimal Buffer size estimation by periodic scheduling with StrictlyPeriodic policy.", algorithms::compute_strictly_periodic_memory}));
-ADD_TRANSFORMATION(BurstSizing,
-transformation_t({ "BurstSizing" , "Minimal Buffer size estimation by periodic scheduling with BURST policy.", algorithms::compute_burst_memory}));
-ADD_TRANSFORMATION(AverageSizing,
-transformation_t({ "AverageSizing" , "Minimal Buffer size estimation by periodic scheduling with AVERAGE policy.", algorithms::compute_average_memory}));
-ADD_TRANSFORMATION(MinMaxSizing,
-transformation_t({ "MinMaxSizing" , "Minimal Buffer size estimation by periodic scheduling with MINMAX policy.", algorithms::compute_minmax_memory}));
-ADD_TRANSFORMATION(WiggersSizing,
-transformation_t({ "WiggersSizing" , "Minimal Buffer size estimation by periodic scheduling with Wiggers policy.", algorithms::compute_wiggers_memory}));
+ADD_TRANSFORMATION(FixedOffsetBufferSizing,
+transformation_t({ "FixedOffsetBufferSizing" , "Minimal Buffer size estimation by periodic scheduling with fixed offset buffer sizing techniques (BURST, AVERAGE, MINMAX, WIGGERS). Define chosen sizing technique as parameter.", algorithms::compute_fixed_offset_buffer_sizing}));
+ADD_TRANSFORMATION(AddVBuffers,
+transformation_t({ "AddVBuffers" , "Add virtual buffers for each edge in dataflow graph", algorithms::add_vbuffers}));
 
 #endif /* PERIODIC_FIXED_H_ */

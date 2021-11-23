@@ -30,6 +30,10 @@ public:
 	void set (ARRAY_INDEX i, task_schedule_t ts) {
 		_data[i] = ts;
 	}
+
+	ARRAY_INDEX size () {
+		return _data.size();
+	}
 	//task_schedule_t operator [](ARRAY_INDEX i) const {return _data[i];}
 	task_schedule_t& operator [](ARRAY_INDEX i)  {return _data[i];}
 
@@ -88,13 +92,14 @@ public :
 	 	return this->_critical_edges;
 	 }
 
-	void verbose_print ();
-	std::string asText () ;
-	std::string asASCII (int line_size) ;
-	std::string asASCIINew (int line_size) ;
+	void verbose_print () const;
+	std::string asText () const;
+	std::string asASCII (int line_size) const;
+	std::string asASCIINew (int line_size) const;
+	std::string asASCIINewNew (int line_size) const;
+	bool is_valid_schedule () const;
 
 };
 }
-
 
 #endif /* SRC_LIBKITER_ALGORITHMS_SCHEDULING_SCHEDULING_H_ */

@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<sdf3 xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd" type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<applicationGraph>
+<sdf type="Example" name="example">
+<actor type="A" name="a">
+<port type="out" name="p0" rate="2"/>
+</actor>
+<actor type="B" name="b">
+<port type="in" name="p0" rate="3"/>
+<port type="out" name="p1" rate="3"/>
+</actor>
+<actor type="C" name="c">
+<port type="in" name="p0" rate="2"/>
+</actor>
+<channel name="ch0" dstPort="p0" dstActor="b" srcPort="p0" srcActor="a"/>
+
+<channel name="ch1" dstPort="p0" dstActor="c" srcPort="p1" srcActor="b"/>
+
+</sdf>
+
+
+<sdfProperties>
+
+
+<actorProperties actor="a">
+
+
+<processor type="p1" default="true">
+
+<executionTime time="1"/>
+
+</processor>
+
+</actorProperties>
+
+
+<actorProperties actor="b">
+
+
+<processor type="p1" default="true">
+
+<executionTime time="1"/>
+
+</processor>
+
+</actorProperties>
+
+
+<actorProperties actor="c">
+
+
+<processor type="p1" default="true">
+
+<executionTime time="1"/>
+
+</processor>
+
+</actorProperties>
+
+
+<channelProperties channel="ch0"/>
+
+<channelProperties channel="ch1"/>
+
+<graphProperties/>
+
+</sdfProperties>
+
+</applicationGraph>
+
+</sdf3>

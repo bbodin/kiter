@@ -31,7 +31,7 @@ namespace algorithms {
 		return K;
 	}
 
-	void generate_expansion       (models::Dataflow* const  dataflow, parameters_list_t params) {
+	void generate_expansion  (models::Dataflow* const  dataflow, parameters_list_t params) {
 
 		periodicity_vector_t K = generatePeriodicityVector (dataflow, params);
 		ExpansionGraph* eg = new ExpansionGraph (dataflow, K);

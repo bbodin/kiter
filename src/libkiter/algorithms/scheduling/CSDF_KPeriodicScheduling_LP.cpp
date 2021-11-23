@@ -83,7 +83,6 @@ bool add_precedences_constraints (commons::GLPSol &g, commons::idx_t OMEGA_COL, 
 				 );
 
 
-
 	for(EXEC_COUNT phase_i = 1; phase_i <= subphi_t ; phase_i++) {
 	for(EXEC_COUNT period_i = 1; period_i <= periodicity_t ; period_i++) {
 	for(EXEC_COUNT phase_j = 1; phase_j <= subphi_tp ; phase_j++) {
@@ -98,7 +97,6 @@ bool add_precedences_constraints (commons::GLPSol &g, commons::idx_t OMEGA_COL, 
 		const TIME_UNIT ltai = dataflow->getVertexDuration(source,phase_i);
 
 		// /!\ /!\ Careful /!\ /!\, the equation use k to define phases, as K-Periodic is a natural extension of CSDF.
-
 
 		//EXEC_COUNT k    = phase_i +  subphi_t * (period_i - 1); // current input phase
 		//EXEC_COUNT kp   = phase_j +  subphi_tp * (period_j - 1); // current output phase
@@ -199,7 +197,7 @@ bool add_reentrancy_constraints (commons::GLPSol &g, const models::Dataflow* con
     std::string last_col_name = "";
     TIME_UNIT last_col_time = 0;
 
-	for(EXEC_COUNT a = 1; a <= init_phase_quantity ; a++) {
+	for (EXEC_COUNT a = 1; a <= init_phase_quantity ; a++) {
 		const TIME_UNIT       ltai    = last_col_time;
 		std::string new_col_name = START_INIT_COL_STR(name,a);
 		std::string row_name = "Task_order_"  + name + "_" + new_col_name;
@@ -213,8 +211,8 @@ bool add_reentrancy_constraints (commons::GLPSol &g, const models::Dataflow* con
 	}
 
 
-	for(EXEC_COUNT k = 1; k <= periodicity_factor ; k++) {
-		for(EXEC_COUNT a = 1; a <= periodic_phase_quantity ; a++) {
+	for (EXEC_COUNT k = 1; k <= periodicity_factor ; k++) {
+		for (EXEC_COUNT a = 1; a <= periodic_phase_quantity ; a++) {
 			const TIME_UNIT       ltai    = last_col_time;
 			std::string new_col_name = START_COL_STR(name,a,k);
 			std::string row_name = "Task_order_"  + name + "_" + new_col_name;
@@ -280,7 +278,7 @@ models::Scheduling collect_lp_results (const commons::GLPSol &g, const models::D
 }
 
 
-models::Scheduling  algorithms::scheduling::CSDF_KPeriodicScheduling_LP    (const models::Dataflow* const dataflow, const periodicity_vector_t& kvector) {
+models::Scheduling  algorithms::scheduling::CSDF_KPeriodicScheduling_LP (const models::Dataflow* const dataflow, const periodicity_vector_t& kvector) {
 
 
     // STEP 0.1 - PRE
@@ -327,7 +325,6 @@ models::Scheduling  algorithms::scheduling::CSDF_KPeriodicScheduling_LP    (cons
 
         // Voir Bodin 2013 Page 105-106 for a full example of Periodic schedule of CSDF with bi-weighted graph
 
-
         // Reentrancy Constraints
         //******************************************************************
 
@@ -341,8 +338,6 @@ models::Scheduling  algorithms::scheduling::CSDF_KPeriodicScheduling_LP    (cons
         {ForEachEdge(dataflow,c) {
         	VERBOSE_ASSERT(add_precedences_constraints (g, OMEGA_COL, dataflow, kvector, c),"Error when generating reentrancy constraints for edge " << c);
         }}
-
-
 
 
         //##################################################################
@@ -380,12 +375,10 @@ models::Scheduling  algorithms::scheduling::CSDF_KPeriodicScheduling_LP    (cons
 
         return persched;
 
-
 }
 
 
-models::Scheduling  algorithms::scheduling::CSDF_RealPeriodicScheduling_LP    (const models::Dataflow* const dataflow) {
-
+models::Scheduling  algorithms::scheduling::CSDF_RealPeriodicScheduling_LP (const models::Dataflow* const dataflow) {
 
     // STEP 0.1 - PRE
     VERBOSE_ASSERT(dataflow,TXT_NEVER_HAPPEND);
@@ -400,9 +393,7 @@ models::Scheduling  algorithms::scheduling::CSDF_RealPeriodicScheduling_LP    (c
     }}
 
 
-
     const periodicity_vector_t& kvector = generate1PeriodicVector(dataflow);
-
 
 
     //##################################################################
@@ -422,12 +413,12 @@ models::Scheduling  algorithms::scheduling::CSDF_RealPeriodicScheduling_LP    (c
             std::string name = dataflow->getVertexName(t);
 
             // Define periodic phases
-    		for(EXEC_COUNT a = 1; a <= dataflow->getPhasesQuantity(t) ; a++) {
+    		for (EXEC_COUNT a = 1; a <= dataflow->getPhasesQuantity(t) ; a++) {
     				g.addColumn(START_COL_STR(name,a,1),commons::KIND_CONTINUE,commons::bound_s(commons::LOW_BOUND,0),0);
     		}
 
 
-    		for(EXEC_COUNT a = 2; a <= dataflow->getPhasesQuantity(t) ; a++) {
+    		for (EXEC_COUNT a = 2; a <= dataflow->getPhasesQuantity(t) ; a++) {
     			// Constraint the starting time to be periodic
     			// an = an-1 + omega / PhaseCount
     			// an - an-1 - omega / PhaseCount = 0
@@ -469,8 +460,6 @@ models::Scheduling  algorithms::scheduling::CSDF_RealPeriodicScheduling_LP    (c
         }}
 
 
-
-
         //##################################################################
         // SOLVE LP
         //##################################################################
@@ -506,14 +495,13 @@ models::Scheduling  algorithms::scheduling::CSDF_RealPeriodicScheduling_LP    (c
 
         return persched;
 
-
 }
 
 
 void algorithms::scheduling::CSDF_Real1PeriodicScheduling_LP (models::Dataflow*  dataflow, parameters_list_t )  {
 
 	VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-	models::Scheduling res = CSDF_RealPeriodicScheduling_LP    (dataflow);
+	models::Scheduling res = CSDF_RealPeriodicScheduling_LP (dataflow);
 
    TIME_UNIT omega = res.getGraphPeriod();
    std::cout << "SPeriodic(LP) throughput is "  << std::setw( 11 ) << std::setprecision( 9 ) <<  1.0 / omega << std::endl;
@@ -524,7 +512,7 @@ void algorithms::scheduling::CSDF_Real1PeriodicScheduling_LP (models::Dataflow* 
  void algorithms::scheduling::CSDF_1PeriodicScheduling_LP (models::Dataflow*  dataflow, parameters_list_t )  {
 
 	VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-	models::Scheduling res = CSDF_KPeriodicScheduling_LP    (dataflow, generate1PeriodicVector(dataflow));
+	models::Scheduling res = CSDF_KPeriodicScheduling_LP  (dataflow, generate1PeriodicVector(dataflow));
 
     TIME_UNIT omega = res.getGraphPeriod();
     std::cout << "1Periodic(LP) throughput is "  << std::setw( 11 ) << std::setprecision( 9 ) <<  1.0 / omega << std::endl;
@@ -535,13 +523,11 @@ void algorithms::scheduling::CSDF_Real1PeriodicScheduling_LP (models::Dataflow* 
  void algorithms::scheduling::CSDF_NPeriodicScheduling_LP (models::Dataflow*  dataflow, parameters_list_t )  {
 
 	VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-	models::Scheduling res = CSDF_KPeriodicScheduling_LP    (dataflow, generateNPeriodicVector(dataflow));
+	models::Scheduling res = CSDF_KPeriodicScheduling_LP (dataflow, generateNPeriodicVector(dataflow));
 
     TIME_UNIT omega = res.getGraphPeriod();
     std::cout << "NPeriodic(LP) throughput is "  << std::setw( 11 ) << std::setprecision( 9 ) <<  1.0 / omega << std::endl;
     std::cout << "NPeriodic(LP) period     is " << std::fixed << std::setw( 11 ) << std::setprecision( 6 ) << omega   << std::endl;
 
 }
-
-
 

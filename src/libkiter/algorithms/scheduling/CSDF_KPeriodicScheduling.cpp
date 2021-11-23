@@ -13,7 +13,7 @@
 #include <printers/SDF3Wrapper.h>
 
 
- const periodicity_vector_t algorithms::scheduling::generateNPeriodicVector(const models::Dataflow* dataflow) {
+ const periodicity_vector_t algorithms::scheduling::generateNPeriodicVector (const models::Dataflow* dataflow) {
 
 	VERBOSE_ASSERT(dataflow->has_repetition_vector(),"Need repetition vector.");
 	periodicity_vector_t kvector;
@@ -24,12 +24,12 @@
 }
 
 
- const periodicity_vector_t algorithms::scheduling::generate1PeriodicVector(const models::Dataflow* dataflow) {
+ const periodicity_vector_t algorithms::scheduling::generate1PeriodicVector (const models::Dataflow* dataflow) {
 	 return algorithms::scheduling::generateKPeriodicVector(dataflow, 1);
 }
 
 
- const periodicity_vector_t algorithms::scheduling::generateKPeriodicVector(const models::Dataflow* dataflow, int k) {
+ const periodicity_vector_t algorithms::scheduling::generateKPeriodicVector (const models::Dataflow* dataflow, int k) {
 
 	periodicity_vector_t kvector;
 	for (Vertex v : dataflow->vertices()){
@@ -38,7 +38,8 @@
 	return kvector;
 }
 
- models::Scheduling algorithms::scheduling::CSDF_1PeriodicScheduling    (const models::Dataflow* const dataflow) {
+
+models::Scheduling algorithms::scheduling::CSDF_1PeriodicScheduling (const models::Dataflow* const dataflow) {
 
  	VERBOSE_ASSERT(dataflow->has_repetition_vector(), "Repetition vector failed.");
 
@@ -182,7 +183,6 @@ models::Scheduling algorithms::scheduling::CSDF_KPeriodicScheduling    (const mo
         while (true) {
 
 
-
             iteration_count++;
             ////////////// SCHEDULE CALL // BEGIN : resultprime = KSchedule(dataflow,&kvector);
 
@@ -236,14 +236,12 @@ models::Scheduling algorithms::scheduling::CSDF_KPeriodicScheduling    (const mo
             VERBOSE_DEBUG("   Critical circuit is " << cc2string(dataflow,&(result.critical_edges)) <<  "");
 
 
-
                 sumKi = 0;
                 {ForEachVertex(dataflow,t) {
                     sumKi += kvector[t];
                 }}
 
                 VERBOSE_INFO("Iteration "<< std::fixed << std::setw( 4 ) << iteration_count <<  "      period = "  << std::fixed << std::setw( 15 ) << std::setprecision( 2 ) << 1.0/result.throughput  <<  "      complexity = "  << std::setw( 4 )  << (sumKi * 100) / sumNi ) ;
-
 
         }
 
@@ -261,6 +259,7 @@ models::Scheduling algorithms::scheduling::CSDF_KPeriodicScheduling    (const mo
     VERBOSE_INFO("K-periodic schedule - total_ki=" << sumKi << " total_ni=" << sumNi );
 
     TIME_UNIT res = result.throughput;
+    std::cout << res << std::endl;
     VERBOSE_INFO( "Maximum throughput is "  << std::setw( 11 ) << std::setprecision( 9 ) <<  res );
     VERBOSE_INFO( "Maximum period     is " << std::fixed << std::setw( 11 ) << std::setprecision( 6 ) << 1.0/res   );
 
@@ -296,7 +295,7 @@ void algorithms::scheduling::CSDF_1PeriodicThroughput (models::Dataflow*  datafl
 void algorithms::scheduling::OnePeriodicScheduling (models::Dataflow*  dataflow, parameters_list_t params)  {
 
 	VERBOSE_ASSERT(computeRepetitionVector(dataflow),"inconsistent graph");
-	models::Scheduling res = CSDF_1PeriodicScheduling    (dataflow);
+	models::Scheduling res = CSDF_1PeriodicScheduling (dataflow);
 
    TIME_UNIT omega = res.getGraphPeriod();
 

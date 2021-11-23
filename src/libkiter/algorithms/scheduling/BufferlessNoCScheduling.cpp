@@ -70,7 +70,6 @@ static void print_graph (models::Dataflow * to, std::string suffix = "none") {
 	}
 
 	{
-
 		std::string filename = sfilename + "_gaph";
 		std::ofstream myfile;
 		myfile.open (filename  + ".dot");
@@ -86,7 +85,6 @@ static void print_graph (models::Dataflow * to, std::string suffix = "none") {
 	}
 
 	to->reset_computation();
-
 }
 
 static LARGE_INT gcdExtended(LARGE_INT x, LARGE_INT y, LARGE_INT *a, LARGE_INT *b)
@@ -189,7 +187,7 @@ static std::vector<std::vector<ARRAY_INDEX>> get_overlaps (models::Dataflow* con
 
 
 //print_graph(to, original_df);
-void algorithms::BufferlessNoCScheduling(models::Dataflow* const  _dataflow, parameters_list_t params  ) {
+void algorithms::BufferlessNoCScheduling(models::Dataflow* const  _dataflow, parameters_list_t params) {
 
 	models::Dataflow* to = new models::Dataflow(*_dataflow);
 
@@ -197,8 +195,8 @@ void algorithms::BufferlessNoCScheduling(models::Dataflow* const  _dataflow, par
 
 	VERBOSE_INFO("Step 1 - ModelNoCConflictFreeCommunication");
 	algorithms::ModelNoCConflictFreeCommunication(to) ;
-
 	print_graph(to, "ModelNoCConflictFreeCommunication");
+	VERBOSE_ASSERT(computeRepetitionVector(to),"inconsistent graph");
 
 	VERBOSE_INFO("Step 2 - Identify task that we care about");
 	std::vector<std::vector<ARRAY_INDEX>> bags = get_overlaps(to);
@@ -213,16 +211,15 @@ void algorithms::BufferlessNoCScheduling(models::Dataflow* const  _dataflow, par
 			for (auto e : bag) {
 				VERBOSE_ASSERT(old_mapping == to->getMapping( to->getVertexById( e ) ) , "Should not try to merge task from different mapping.");
 			}
-			to->reset_computation();
-			VERBOSE_ASSERT(computeRepetitionVector(to),"inconsistent graph");
+
 			models::Scheduling scheduling_res = CSDF_SCHEDULING_FUNCTION(to);
+
 			algorithms::transformation::mergeCSDFFromSchedule(to,new_name,bag,&scheduling_res);
-
-
 			Vertex new_task = to->getVertexByName(new_name);
 			to->setMapping(new_task,old_mapping);
+			print_graph(to, "after_mergeCSDFFromKperiodicSchedule_" + new_name);
+			VERBOSE_ASSERT(computeRepetitionVector(to),"inconsistent graph");
 
-			print_graph(to, "mergeCSDFFromKperiodicSchedule_" + new_name);
 		}
 	}
 

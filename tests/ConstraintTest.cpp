@@ -222,18 +222,52 @@ BOOST_AUTO_TEST_CASE(multiple_feedback_edges_non_zero_test) {
 BOOST_AUTO_TEST_CASE(overlapping_constraints_test) {
   models::Dataflow *df = get_3node_df();
   auto config = get_config(df);
+  bool passed = true;
   Constraint constraint1({{{{1, 2}, 0}, 2}});
   Constraint constraint2({{{{2, 3}, 0}, 4}});
 
   // Apply first
   std::vector<TokenConfiguration> next_configs1 = constraint1.apply(config);
-
-  // Increase the preloads so we have less possible preload options
-  df->setPreload(df->getEdgeById(1), 1);
-  df->setPreload(df->getEdgeById(2), 1);
-
   // Apply second
   std::vector<TokenConfiguration> next_configs2 = constraint2.apply(config);
 
+  std::vector<TokenConfiguration> next_configs;
+  next_configs.reserve(next_configs1.size() + next_configs2.size());
+  next_configs.insert(next_configs.end(), next_configs1.begin(),
+                      next_configs1.end());
+  next_configs.insert(next_configs.end(), next_configs2.begin(),
+                      next_configs2.end());
+
+  std::vector<std::map<ARRAY_INDEX, TOKEN_UNIT>> options = {
+      {{1, 0}, {2, 1}, {3, 3}},
+      {{1, 0}, {2, 3}, {3, 1}},
+      {{1, 0}, {2, 2}, {3, 2}},
+      {{1, 0}, {2, 0}, {3, 4}},
+      {{1, 0}, {2, 4}, {3, 0}},
+      {{1, 0}, {2, 2}, {3, 0}},
+      {{1, 2}, {2, 0}, {3, 0}},
+      {{1, 1}, {2, 1}, {3, 0}},
+  };
+
+  for (const auto &conf : next_configs) {
+    auto map = conf.getConfiguration();
+    bool found = false;
+
+    // Loop over the configs we expect to find, we break if we find a match
+    for (const auto &opt : options) {
+      if (found) {
+        break;
+      }
+      found = areConfigsEqual(map, opt);
+    }
+
+    if (!found) {
+      VERBOSE_DEBUG(
+          "Configuration not found in expected: " << conf.to_csv_line());
+      passed = false;
+    }
+  }
+
+  BOOST_TEST(passed);
 }
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,5 +1,5 @@
 //
-// Created by toky on 26/4/23.
+// Created by Bruno on 26/4/23.
 //
 
 #include "ThroughputBufferingDSE.h"
@@ -11,8 +11,8 @@
 #include <algorithms/dse/ModularDSE.h>
 #include <printers/stdout.h>
 
-namespace algorithms {
-    namespace dse {
+
+    namespace algorithms::dse {
 
 
         bool ThroughputBufferingStopCondition::operator()(const algorithms::dse::TokenConfiguration &new_config,
@@ -62,7 +62,7 @@ namespace algorithms {
             if (current.getPerformance().critical_edges.empty()) {
                 // Special case, the exploration asked to continue while there is no critical cycle...
                 VERBOSE_INFO("Empty set of critical edge. End of search.");
-                return std::vector<algorithms::dse::TokenConfiguration>();
+                return {};
             }
 
             // K2DSE mode, local search in the cycle to see what increments actually improve this cycle
@@ -99,7 +99,7 @@ namespace algorithms {
             // To avoid computing the throughput of the initial TC (required to stop the search)
             // We can use the original graph period. BUT if the repetition vector change, the graph period changes.
             // TO solve the problem we can rescale the cc period.
-            // current_cc_th = current_th * Ni/Ni';
+            // current_cc_th = current_th * Ni/Ni;
             TIME_UNIT current_cc_th = 0;
             ARRAY_INDEX reference_edge_id = *current.getPerformance().critical_edges.begin();
             reference_edge_id = cc_g->getVertexId(cc_g->getFirstVertex());
@@ -108,7 +108,7 @@ namespace algorithms {
             current_cc_th = (current_th * df_Ni) / cc_Ni;
 
 
-            // // Instead we could have compute the throughput ...
+            // // Instead we could have computed the throughput ...
             //models::Dataflow sandbox = *cc_g;
             //sandbox.reset_computation();
             //auto cc_current_performance = kperiodic_performance_func(&sandbox, tc);
@@ -124,7 +124,7 @@ namespace algorithms {
                                             kperiodic_performance_func,
                                             ThroughputBufferingNext(KDSE_MODE, false),
                                             ThroughputBufferingStopCondition(current_cc_th, true),
-                                            1);
+                                            false);
 
 #ifdef USE_DATABASE
 
@@ -178,7 +178,7 @@ namespace algorithms {
             VERBOSE_DEBUG("End of local search:");
 
             // 3. any solutions that beat the target are considered.
-            for (auto solution: cc_sds) {
+            for (const auto& solution: cc_sds) {
                 if (solution.getPerformance().throughput > current_cc_th) {
                     VERBOSE_DEBUG("    - KEEP " << solution.to_csv_line());
                     auto new_configuration = current_configuration; // Make a copy of the current configuration
@@ -241,7 +241,7 @@ namespace algorithms {
 
 
             VERBOSE_DEBUG("next configs: " << next_configurations.size());
-            for (auto solution: next_configurations) {
+            for (const auto& solution: next_configurations) {
                 VERBOSE_DEBUG("     " << solution.to_csv_line());
             }
 
@@ -252,8 +252,8 @@ namespace algorithms {
         TOKEN_UNIT computeMinimalBufferSize(const models::Dataflow *dataflow, const Edge c) {
 
             // initialise channel size to maximum int size
-            TOKEN_UNIT buffer_size = INT_MAX; // NOTE (should use ULONG_MAX but it's a really large value)
-            TOKEN_UNIT ratePeriod = (TOKEN_UNIT) std::lcm(dataflow->getEdgeInPhasesCount(c),
+            TOKEN_UNIT buffer_size = INT_MAX; // NOTE (should use ULONG_MAX, but it's a really large value)
+            auto ratePeriod = (TOKEN_UNIT) std::lcm(dataflow->getEdgeInPhasesCount(c),
                                                           dataflow->getEdgeOutPhasesCount(c));
 
             TOKEN_UNIT tokensInitial = dataflow->getPreload(c);
@@ -421,11 +421,11 @@ namespace algorithms {
 
             // Compute the target throughput
             TIME_UNIT target_throughput = algorithms::compute_Kperiodic_throughput_and_cycles(dataflow).throughput;
-            models::Dataflow *dataflow_prime = new models::Dataflow(*dataflow);
+            auto *dataflow_prime = new models::Dataflow(*dataflow);
             algorithms::transformation::generateInplaceFeedbackBuffers(dataflow_prime);
             dataflow_prime->precomputeFineGCD();
             computeRepetitionVector(dataflow_prime);
-            ThroughputBufferingStopCondition throughputbuffering_stop_condition(target_throughput);
+            ThroughputBufferingStopCondition throughput_buffering_stop_condition(target_throughput);
             ThroughputBufferingNext throughputbuffering_next_distributions(
                     (mode == ASAP_DSE_MODE) ? KDSE_MODE : mode,
                     params.use_cache
@@ -435,10 +435,10 @@ namespace algorithms {
                                             (mode == ASAP_DSE_MODE) ? asap_performance_func
                                                                     : kperiodic_performance_func,
                                             throughputbuffering_next_distributions,
-                                            throughputbuffering_stop_condition,
+                                            throughput_buffering_stop_condition,
                                             params.thread_count);
 
-            if (params.import_filename != "") {
+            if (!params.import_filename.empty()) {
                 VERBOSE_INFO("Load previous search points from " << params.import_filename);
                 dse.import_results(params.import_filename);
             }
@@ -460,13 +460,13 @@ namespace algorithms {
 
 
             VERBOSE_INFO("Start waiting for exploration_future.");
-            bool timeout_happenend = false;
+            bool timeout_happened = false;
             if (params.timeout_sec > 0) {
                 // Manage the end with a timeout
                 if (std::future_status::timeout ==
                     exploration_future.wait_for(std::chrono::seconds(params.timeout_sec))) {
                     // The timeout happened, we need to force the end.
-                    timeout_happenend = true;
+                    timeout_happened = true;
                     VERBOSE_INFO("Timeout, sending a stop signal.");
                     dse.stop();
                     VERBOSE_INFO("Wait for stop signal effect.");
@@ -477,7 +477,7 @@ namespace algorithms {
 
             exploration_future.wait();
 
-            if (timeout_happenend) {
+            if (timeout_happened) {
                 VERBOSE_INFO("Exploration_future ended, after stop signal.");
                 VERBOSE_WARNING("Incomplete exploration.");
             }
@@ -487,10 +487,9 @@ namespace algorithms {
         }
 
 
-        void throughputbuffering_dse(models::Dataflow *const dataflow, parameters_list_t params) {
-            size_t realtime_output = (params.count("realtime") > 0) ? commons::fromString<bool>(
-                    params.at("realtime"))
-                                                                    : false;
+        void throughput_buffering_dse(models::Dataflow *const dataflow, parameters_list_t params) {
+            size_t realtime_output = (params.count("realtime") > 0) && commons::fromString<bool>(
+                    params.at("realtime"));
             size_t thread_count = (params.count("thread") > 0) ? commons::fromString<size_t>(params.at("thread"))
                                                                : 1;
             size_t timeout = (params.count("timeout") > 0) ? commons::fromString<size_t>(params.at("timeout")) : 0;
@@ -514,8 +513,8 @@ namespace algorithms {
                 if (params.at("mode") == "K2DSE") mode = K2DSE_MODE;
                 if (params.at("mode") == "K2DSEA") mode = K2DSEA_MODE;
             }
-            size_t use_cache = (params.count("usecache") > 0) ? commons::fromString<bool>(
-                    params.at("usecache"))   : false;
+            size_t use_cache = (params.count("usecache") > 0) && commons::fromString<bool>(
+                    params.at("usecache"));
 
             ExplorationParameters exploration_parameters;
             exploration_parameters.timeout_sec = timeout;
@@ -532,5 +531,5 @@ namespace algorithms {
             delete tc;
         }
     } // end of dse namespace
-} // end of algorithms namespace
+// end of algorithms namespace
 

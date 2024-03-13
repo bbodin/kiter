@@ -51,16 +51,16 @@ namespace algorithms {
                                                            const ExplorationParameters& params,
                                                            algorithms::dse::TokenConfiguration* tc = nullptr) ;
 
-        void throughputbuffering_dse   (models::Dataflow* const  dataflow, parameters_list_t params);
+        void throughput_buffering_dse   (models::Dataflow* const  dataflow, parameters_list_t params);
     }
 }
 
 
 ADD_TRANSFORMATION(throughputbufferingDSE,
                    transformation_t({
-                                            "throughputbufferingDSE" ,
+                                            "throughputbufferingDSE",
                                             "DSE that solve the throughputbuffering problem for a graph with \"feedback\" buffers",
-                                            algorithms::dse::throughputbuffering_dse}
+                                            algorithms::dse::throughput_buffering_dse}
                    ));
 
 

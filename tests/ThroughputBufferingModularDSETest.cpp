@@ -135,7 +135,7 @@ BOOST_FIXTURE_TEST_SUITE(ThroughputBuffering_modular_dse_test, WITH_SAMPLE)
 
         parameters_list_t params;
         params["realtime"] = "1";
-        algorithms::dse::throughputbuffering_dse(&g, params);
+        algorithms::dse::throughput_buffering_dse(&g, params);
     }
 
 

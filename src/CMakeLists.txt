@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/libkiter libkiter)
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/kiter kiter)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/qiter qiter)
 

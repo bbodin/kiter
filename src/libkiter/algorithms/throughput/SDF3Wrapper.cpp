@@ -5,6 +5,8 @@
  *      Author: toky
  */
 
+#include <array>
+
 #include <commons/verbose.h>
 #include <printers/SDF3Wrapper.h>
 #include "SDF3Wrapper.h"

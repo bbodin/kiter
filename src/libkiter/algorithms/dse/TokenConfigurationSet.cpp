@@ -6,6 +6,49 @@
 
 namespace algorithms {
     namespace dse {
+        StorageDistributionSet TokenConfigurationSet::toStorageDistributionSet(const models::Dataflow* original) const {
+            StorageDistributionSet sd_set;
+            // Iterate all token configurations grouped by cost
+            for (const auto &cost_items : this->configurations_by_cost) {
+                for (const auto &tcfg : cost_items.second) {
+
+                    // We have tcfg the config, we need to define channelQuants
+
+                    // Build channel quantities for the original dataflow
+                    std::map<Edge, BufferInfos> channelQuants;
+                    const models::Dataflow *df_with_fb = tcfg.getDataflow();
+
+                    { ForEachEdge(original, e_orig) {
+                            BufferInfos bi;
+                            bi.preload = original->getPreload(e_orig);
+
+
+                            // Find the associated feedback edge in the feedback-augmented dataflow by name
+                            std::string fb_name = original->getEdgeName(e_orig) + std::string("_prime");
+                            TOKEN_UNIT fb_tokens = 0;
+                            if (df_with_fb) {
+                                Edge e_fb = df_with_fb->getEdgeByName(fb_name);
+                                ARRAY_INDEX fb_id = df_with_fb->getEdgeId(e_fb);
+                                const auto &conf = tcfg.getConfiguration();
+                                auto it = conf.find(fb_id);
+                                if (it != conf.end()) {
+                                    fb_tokens = it->second;
+                                }
+                            }
+                            bi.buffer_size = bi.preload + fb_tokens;
+                            channelQuants[e_orig] = bi;
+                        } }
+
+                    TIME_UNIT thr = 0.0;
+                    if (tcfg.hasPerformance()) thr = tcfg.getPerformance().throughput;
+
+                    StorageDistribution sd(original, thr, channelQuants);
+                    sd_set.addStorageDistribution(sd);
+                }
+            }
+            return sd_set;
+        }
+
         void TokenConfigurationSet::add(const TokenConfiguration& new_config) {
             auto insert_res = this->configurations_by_cost[new_config.getCost()].insert(new_config);
             if (new_config.hasPerformance() and insert_res.second) {

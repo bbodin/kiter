@@ -6,6 +6,7 @@
 #define KITER_TOKENCONFIGURATIONSET_H
 
 #include "TokenConfiguration.h"
+#include <algorithms/dse/StorageDistributionSet.h>
 
 namespace algorithms {
     namespace dse {
@@ -76,6 +77,10 @@ namespace algorithms {
                 return this->best_point;
             }
 
+            // Convert this set of TokenConfigurations (defined on a feedback-augmented graph)
+            // into a set of StorageDistributions for the original graph without feedback edges.
+            // For each normal edge e in original, storage = floor(preload(e), FineGCD(e)) + tokens on e_prime in the token configuration.
+            StorageDistributionSet toStorageDistributionSet(const models::Dataflow* original) const;
 
         private:
 

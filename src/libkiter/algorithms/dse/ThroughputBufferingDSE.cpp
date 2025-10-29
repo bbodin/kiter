@@ -482,6 +482,7 @@
                 VERBOSE_WARNING("Incomplete exploration.");
             }
 
+
             return dse.getResults();
 
         }
@@ -529,6 +530,9 @@
             TokenConfigurationSet result = solve_throughputbuffering(dataflow, mode, exploration_parameters, tc);
 
             delete tc;
+
+            // Use the helper conversion on TokenConfigurationSet
+            return result.toStorageDistributionSet(dataflow);
         }
     } // end of dse namespace
 // end of algorithms namespace

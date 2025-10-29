@@ -575,7 +575,7 @@ public :
     	{ForEachEdge(this,pEdge)     {
     		if (this->getEdgeName(pEdge) == s) return pEdge;
     	}};
-    	throw std::out_of_range(TXT_CHANNEL_NOT_FOUND  + s);
+    	throw std::out_of_range(TXT_CHANNEL_NOT_FOUND + s);
     }
     inline  void                setEdgeName     (const Edge c,
                                                  const std::string name)    {

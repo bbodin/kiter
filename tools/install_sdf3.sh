@@ -1,5 +1,7 @@
 #!/bin/bash
 
+URL=http://www.es.ele.tue.nl/sdf3/download/files/releases/
+URL=https://sstuijk.estue.nl/tools/sdf3/download/files/releases/
 set -x
 
 
@@ -32,7 +34,7 @@ if md5sum --status -c "${TARGET}/${SDF3_ARCHIVE}.md5"; then
     echo "Archive already downloaded.";
 else
     rm -f "${TARGET}/${SDF3_ARCHIVE}"
-    wget --tries=1 http://www.es.ele.tue.nl/sdf3/download/files/releases/"${SDF3_ARCHIVE}" -O "${TARGET}/${SDF3_ARCHIVE}";
+    wget --tries=1 "${URL}${SDF3_ARCHIVE}" -O "${TARGET}/${SDF3_ARCHIVE}";
 fi
 
 ## UNZIP AND COMPILE

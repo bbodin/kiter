@@ -208,11 +208,10 @@ static router_xbar_usage_t build_router_xbar_usage (const models::Dataflow* cons
     return (router_xbar_usage);
 }
 
-std::vector<std::set<ARRAY_INDEX>> get_overlaps (models::Dataflow* const  dataflow) {
+std::vector<std::vector<ARRAY_INDEX>> get_overlaps (models::Dataflow* const  dataflow) {
 
 	router_xbar_usage_t router_xbar_usage = build_router_xbar_usage (dataflow);
-
-	std::vector<std::set<ARRAY_INDEX>> res ;
+	std::vector<std::vector<ARRAY_INDEX>> res ;
 
 	for (auto item : router_xbar_usage) {
 
@@ -230,7 +229,7 @@ std::vector<std::set<ARRAY_INDEX>> get_overlaps (models::Dataflow* const  datafl
 			}
 
 			for (auto bag : g.getall()) {
-				res.push_back(bag);
+				res.push_back(std::vector<ARRAY_INDEX>(bag.begin(), bag.end()));
 			}
 
 		}

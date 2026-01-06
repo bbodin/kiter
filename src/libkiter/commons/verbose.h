@@ -38,9 +38,37 @@
 #define BLUE_COLOR   (commons::VERBOSE_COLOR?"\033[1;34m":"")
 #define RESET_COLOR  (commons::VERBOSE_COLOR?"\033[0m":"")
 #include <string>
-// const inline std::string _verbosegetFilename(const std::string s) { return s.substr(s.find_last_of("/\\")+1);}
-const inline std::string _verbosegetFilename(const std::string s) { return s;}
-#define __SHOW_LEVEL "[ "<< __RELEASE__ <<"  " << _verbosegetFilename(__FILE__) << ":" << __LINE__ << "]" << RESET_COLOR << " "
+
+#define __SRC_FILENAME__ ([]() {                         \
+constexpr const char* file = __FILE__;               \
+constexpr const char* SRC = "/src/";                 \
+\
+const char* p = file;                                \
+const char* match = nullptr;                         \
+\
+while (*p) {                                         \
+const char* f = p;                               \
+const char* s = SRC;                             \
+\
+while (*f && *s && *f == *s) { ++f; ++s; }       \
+if (*s == '\0') {                                \
+match = p + 1; /* skip leading '/' */        \
+break;                                       \
+}                                                \
+++p;                                             \
+}                                                    \
+\
+if (match) return match;                             \
+\
+/* fallback: basename */                             \
+const char* last = file;                             \
+for (const char* q = file; *q; ++q)                  \
+if (*q == '/' || *q == '\\') last = q + 1;       \
+return last;                                         \
+}())
+
+
+#define __SHOW_LEVEL "[ "<< __RELEASE__ <<"  " << __SRC_FILENAME__ << ":" << __LINE__ << "]" << RESET_COLOR << " "
 
 #ifdef __RELEASE_MODE__
 #define EXIT_ON_FAILURE(msg)  /*int* toto = NULL; *toto = 1;*/ abort()

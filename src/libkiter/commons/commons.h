@@ -384,7 +384,7 @@ template<typename T>
 	 std::stringstream s;
 	 s << "{";
 	 bool first = true;
-	 for (auto myt : t) {
+	 for (auto const & myt : t) {
 		 if (!first) s << ",";
 		 s << commons::toString(myt);
 		 first = false;

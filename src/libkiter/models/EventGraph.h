@@ -28,6 +28,7 @@
 #include "howard_cycle_ratio.hpp"
 //#include <boost/graph/howard_cycle_ratio.hpp>
 
+#include <queue>
 #include <commons/commons.h>
 #include <commons/verbose.h>
 
@@ -390,6 +391,10 @@ public :
         //TIME_UNIT defaultmin = - std::numeric_limits<TIME_UNIT>::infinity();
         TIME_UNIT defaultmin = 0;
 
+        std::queue<models::EventGraphVertex> worklist;
+        std::vector<bool> in_queue(this->getEventCount(), false);
+        std::vector<size_t> visit_count(this->getEventCount(), 0);
+
         {ForEachEvent(this,e)   {
         	auto startingtime = defaultmin;
             if (first) {
@@ -397,32 +402,36 @@ public :
                 startingtime = 0;
             }
             this->setStartingTime(e,startingtime);
+            worklist.push(e);
+            in_queue[e] = true;
+            visit_count[e] = 1;
             VERBOSE_EVENTGRAPH_DEBUG(" Event " << e << ":" << this->getEvent(e).toString() << " Start = " << startingtime);
         }}
 
-        VERBOSE_EVENTGRAPH_DEBUG("computeStartingTime getStartingTime with " <<  this->getEventCount() << " eventCount");
-        for (EXEC_COUNT i = 0 ; i < this->getEventCount() ; i ++ ) {
-        	bool updated = false;
-            {ForEachEvent(this,event1)   {
-                VERBOSE_EVENTGRAPH_DEBUG("Look for " << event1 << " outputs");
-            	{ForEachOutputs(this,event1,constraint){
-                    models::EventGraphVertex event2 =this->getTarget(constraint);
-                    auto previous_start1 = this->getStartingTime(event1);
-                    auto previous_start2 = this->getStartingTime(event2);
-                    VERBOSE_EVENTGRAPH_DEBUG("  test " << event2 << " Start from " << previous_start2 << " to " << this->getFlow(constraint) << "+" <<  previous_start1);
+        VERBOSE_EVENTGRAPH_DEBUG("computeStartingTime getStartingTime with worklist-based approach");
+        while (!worklist.empty()) {
+            models::EventGraphVertex event1 = worklist.front();
+            worklist.pop();
+            in_queue[event1] = false;
 
-                    if (previous_start2 - previous_start1 < this->getFlow(constraint)) {
-                        this->setStartingTime(event2, this->getFlow(constraint) + previous_start1);
-                        VERBOSE_EVENTGRAPH_DEBUG("   Update " << event2 << " Start from " << previous_start2 << " to " << this->getFlow(constraint) << "+" <<  previous_start1);
+            {ForEachOutputs(this,event1,constraint){
+                models::EventGraphVertex event2 = this->getTarget(constraint);
+                auto previous_start1 = this->getStartingTime(event1);
+                auto previous_start2 = this->getStartingTime(event2);
 
-                        updated = true;
+                if (previous_start2 - previous_start1 < this->getFlow(constraint)) {
+                    this->setStartingTime(event2, this->getFlow(constraint) + previous_start1);
+                    if (!in_queue[event2]) {
+                        worklist.push(event2);
+                        in_queue[event2] = true;
+                        visit_count[event2]++;
+                        if (visit_count[event2] > this->getEventCount()) {
+                            VERBOSE_ERROR("Positive cycle detected in computeStartingTimeWithOmega with omega = " << omega);
+                            return false;
+                        }
                     }
-                }}
+                }
             }}
-            if (!updated) {
-            	VERBOSE_EVENTGRAPH_DEBUG("  No nore updates.");
-            	break;
-            }
         }
 
 

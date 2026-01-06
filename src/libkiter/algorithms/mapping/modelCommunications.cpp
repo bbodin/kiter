@@ -213,6 +213,22 @@ std::vector<std::vector<ARRAY_INDEX>> get_overlaps (models::Dataflow* const  dat
 	router_xbar_usage_t router_xbar_usage = build_router_xbar_usage (dataflow);
 	std::vector<std::vector<ARRAY_INDEX>> res ;
 
+	// Check link usage: only group tasks if they share the same directed Edge ID
+	std::map<edge_id_t, std::vector<ARRAY_INDEX>> link_usage;
+	for (auto v : dataflow->vertices()) {
+		auto mapping = dataflow->getMapping(v);
+		if (dataflow->getNoC().hasEdge(mapping)) {
+			link_usage[mapping].push_back(dataflow->getVertexId(v));
+		}
+	}
+
+	// Add link conflicts to the bags
+	for (auto const& [link_id, tasks] : link_usage) {
+		if (tasks.size() > 1) {
+			res.push_back(tasks);
+		}
+	}
+
 	for (auto item : router_xbar_usage) {
 
 			const node_id_t router_id       =  item.first;

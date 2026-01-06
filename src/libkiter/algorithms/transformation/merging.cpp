@@ -585,7 +585,7 @@ bool algorithms::transformation::mergeCSDFFromSchedule (models::Dataflow* to, st
 
 		TIME_UNIT execution_time = (phase < (ARRAY_INDEX) infos.durations.size()) ? infos.durations[phase]: infos.durations[infos.init_phases +  ((phase - infos.init_phases) % infos.periodic_phases)];
 
-		VERBOSE_INFO("     - Execution of task "  << tid << ", phase=" << phase << " duration=" << execution_time << " taken from " << commons::toString(infos.durations));
+		VERBOSE_DEBUG("     - Execution of task "  << tid << ", phase=" << phase << " duration=" << execution_time << " taken from " << commons::toString(infos.durations));
 
 		if ((ARRAY_INDEX) init_duration_vec.size() < init_phase_count) {
 			init_duration_vec.push_back(execution_time);

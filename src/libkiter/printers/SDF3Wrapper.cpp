@@ -714,11 +714,13 @@ void writeChannel (xmlTextWriterPtr writer, const models::Dataflow* dataflow, co
 
     if (edge_srcPort == "") {
         edge_srcPort = "in_" + commons::toString(dataflow->getEdgeId(e));
-        VERBOSE_WARNING("default port name '" << edge_srcPort << "' used, this may create duplicates.");
+
+        VERBOSE_DEBUG("default port name '" << edge_srcPort << "' used, this may create duplicates.");
     }
     if (edge_dstPort == "") {
         edge_dstPort = "out_" + commons::toString(dataflow->getEdgeId(e));
-        VERBOSE_WARNING("default port name '" << edge_dstPort << "' used, this may create duplicates.");
+
+        VERBOSE_DEBUG("default port name '" << edge_dstPort << "' used, this may create duplicates.");
     }
 
 

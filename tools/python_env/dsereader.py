@@ -5,6 +5,7 @@ import math
 import os
 import time
 
+import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 import psutil
@@ -12,6 +13,263 @@ import seaborn as sns
 
 sns.set_theme()
 
+application_names = {
+    "bipartite": {"name": "bipartite"},
+    "fig8": {"name": "fig8"},
+    "modem": {"name": "modem"},
+    "sample": {"name": "sample"},
+    "satellite": {"name": "satellite"},
+    "samplerate": {"name": "samplerate"},
+    "BlackScholes": {"name": "BlackScholes"},
+    "example": {"name": "example"},
+    "Echo": {"name": "Echo"},
+    "PDectect": {"name": "PDectect"},
+    "H264": {"name": "H264"},
+    "h263decoder": {"name": "h263decoder"},
+    "JPEG2000": {"name": "JPEG2000"},
+    "buffercycle": {"name": "buffercycle"},
+}
+
+method_names = {
+    #  0 Infos
+    #  1 Throughput
+    "kdse": {"name": "KDSE", "color": "black"},
+    "k2dse": {"name": "K2DSE", "color": "black"},
+    "k2dsea": {"name": "K2DSEA", "color": "black"},
+    "k2dseC": {"name": "K2DSE w/ cache", "color": "black"},
+    "k2dseaC": {"name": "K2DSEA w/ cache", "color": "black"},
+
+    "kdseP": {"name": "KDSE C 24", "color": "black"},
+    "k2dseCP": {"name": "K2DSE C 24", "color": "black"},
+    "k2dseaCP": {"name": "K2DSEA  C 24", "color": "black"},
+
+    #    8 : { "name" : "KDSE2" ,     "color" : "black"}, # "-athroughputbufferingDSE -prealtime=1 -pmode=KDSE -pthread=2"
+    #    8 : { "name" : "KDSE4" ,     "color" : "black"}, # "-athroughputbufferingDSE -prealtime=1 -pmode=KDSE -pthread=4"
+    #   10 : { "name" : "KDSE8" ,     "color" : "black"}, # "-athroughputbufferingDSE -prealtime=1 -pmode=KDSE -pthread=8"
+    #    9 : { "name" : "KDSE16" ,    "color" : "black"}, # "-athroughputbufferingDSE -prealtime=1 -pmode=KDSE -pthread=16"
+}
+
+
+def time_in_msec(
+        time_msec):  # copy pasted from https://stackoverflow.com/questions/48063828/convert-duration-format-from-float-to-monthdayshoursminutesseconds-in-python
+    time_sec = int(time_msec // 1000)
+    delta = datetime.timedelta(seconds=time_sec)
+    delta_str = str(delta)[-8:]
+    hours, minutes, seconds = [int(val) for val in delta_str.split(":", 3)]
+    days = delta.days % 7
+    return "{}days {}h {}min {}.{}sec ({})".format(days, hours, minutes, seconds, int(time_msec) & 1000, time_msec)
+
+
+def extract_throughput(throughput_file):
+    for line in open(throughput_file).read().split("\n"):
+        if 'KPeriodic Throughput is' in line:
+            th = float(line.split(" ")[-1])
+            return th
+    return None
+
+
+def extract_task_count(infos_file):
+    for line in open(infos_file).read().split("\n"):
+        if 'Task count' in line:
+            count = int(line.split(" ")[-1])
+            return count
+    return None
+
+
+def extract_logs(log_dir):
+    global application_names, method_names
+
+    logs = {}
+
+    # Collect all the filename
+    for f in glob.glob(f"{log_dir}/*.txt"):
+        name = f.split("/")[-1].split(".")[0]
+        method = name.split("_")[1]
+        application = name.split("_")[0]
+        if application not in logs:
+            logs[application] = {'logs': {}}
+
+        logs[application]["logs"][method] = f
+
+    # Clean incomplete apps
+    delete_them = set()
+    for app in logs:
+        if not "throughput" in logs[app]["logs"]:
+            delete_them.add(app)
+        if not "infos" in logs[app]["logs"]:
+            delete_them.add(app)
+    for app in delete_them:
+        del logs[app]
+
+    # Check missing apps amd methods
+    for app in logs:
+        if app not in application_names:
+            print("No such application", app)
+            logs[app]["name"] = app
+            application_names[app] = {"name": app}
+        else:
+            logs[app]["name"] = application_names[app]["name"]
+
+        for method in logs[app]["logs"]:
+            if method not in method_names and method not in ["throughput", "infos"]:
+                print("No such method", method)
+                method_names[method] = {"name": method, "color": "black"}
+
+    # Load task count and throughput
+    for app in logs:
+        logs[app]["max_throughput"] = extract_throughput(logs[app]["logs"]["throughput"])
+        logs[app]["task_count"] = extract_task_count(logs[app]["logs"]["infos"])
+        del logs[app]["logs"]["throughput"]
+        del logs[app]["logs"]["infos"]
+
+    return logs
+
+
+def gen_dse_data(infos, columns=None):
+    if columns is None:
+        columns = ["throughput",
+                   "storage distribution size",
+                   "cumulative duration"]
+    list_of_dict = []
+
+    for app, app_infos in infos.items():
+        if not "max_throughput" in app_infos or not "task_count" in app_infos:
+            print("No such application", app)
+            continue
+        app_name = app_infos["name"]
+        app_max_throughput = app_infos["max_throughput"]
+        app_task_count = app_infos["task_count"]
+        for m in app_infos["logs"].keys():
+            method_name = method_names[m]["name"]
+            try:
+                df = load_app_dse(logdir, app, m, cols=columns)
+                print(df.info())
+            except FileNotFoundError:
+                df = pd.DataFrame()
+            sd_count = df["storage distribution size"].count() if "throughput" in df else "-"
+            max_th = df["throughput"].max()
+            duration = df["cumulative duration"].max() if "cumulative duration" in df else "-"
+            print(app, m, max_th, app_max_throughput)
+            finished = math.isclose(float(max_th), float(app_max_throughput), rel_tol=1e-5)
+            pareto = extract_pareto(df[["throughput", "storage distribution size"]])
+            pareto_count = pareto["storage distribution size"].count() if finished else "-"
+            list_of_dict += [{"graph": app_name,
+                              "#task": app_task_count,
+                              "method": method_name,
+                              "#SD": sd_count,
+                              "#Pareto": pareto_count,
+                              "Duration": int(duration),
+                              "Finished": finished}]
+
+    return pd.DataFrame(list_of_dict)
+
+
+def compare_methods(df, methods):
+
+
+    # Ensure the DataFrame is in the expected format
+    df = df.set_index(["graph", "#task", "method"])
+
+    # Initialize an empty DataFrame for comparison
+    comparison_df = pd.DataFrame()
+
+    # Loop through each method, extract its data, and add it to the comparison DataFrame
+    for method in methods:
+        method_data = df.xs(method, level='method')
+        # If the comparison DataFrame is empty, just add the first method's data
+        if comparison_df.empty:
+            comparison_df = method_data.rename(columns={'Duration': f'Duration_{method}'})
+        else:
+            # If not, join with the existing data
+            comparison_df = comparison_df.join(method_data['Duration'].rename(f'Duration_{method}'))
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    colors = ['skyblue', 'salmon', 'lightgreen', 'orange', 'purple', 'yellow']  # Extend this list for more methods
+    position = 0  # Initial bar position
+
+    for idx, method in enumerate(methods):
+        comparison_df[f'Duration_{method}'].plot(kind='bar', color=colors[idx % len(colors)],
+                                                 position=len(methods) - position, width=1 / (1 + len(methods)),
+                                                 label=method)
+        position += 1  # Move position for the next bar
+
+    plt.ylabel('Duration')
+    plt.title('Comparison of Duration between Methods')
+    plt.xticks(rotation=45)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def compare_methods_with_baseline(df, methods, baseline):
+
+    # Ensure the DataFrame is set with the right multi-index
+    df2 = df.set_index(["graph", "#task", "method"])
+
+    # Initialize a dictionary to hold data for all methods
+    normalized_data = {}
+
+    # Get baseline data for normalization
+    baseline_data = df2.xs(baseline, level='method')
+
+    # Iterate through methods to calculate normalized duration
+    for method in methods:
+        method_data = df2.xs(method, level='method')
+        # Calculate normalized duration as current method duration divided by baseline method duration
+        # Join on index to align corresponding tasks, fill missing values to handle tasks not present in both methods
+        normalized_duration = method_data['Duration'].div(baseline_data['Duration'], fill_value=1)
+        # Store normalized data
+        normalized_data[method] = normalized_duration
+
+    # Convert the dictionary to a DataFrame for plotting
+    comparison_df = pd.DataFrame(normalized_data)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    comparison_df.plot(kind='bar', width=0.8)
+    plt.ylabel(f'Duration (Normalized by {baseline})')
+    plt.title(f'Comparison of Duration between Methods Normalized by {baseline}')
+    plt.xticks(rotation=45)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+def sanity_check(log_dir, applications, methods):
+    for app_key, app_values in applications.items():
+
+        if not "max_throughput" in app_values or not "task_count" in app_values:
+            continue
+
+        for method_key, method_values in methods.items():
+
+            app_name = app_values["name"]
+            app_task_count = app_values["task_count"]
+            method_name = method_values["name"]
+
+            try:
+                df = load_app_dse(log_dir, app_key, method_key, cols=["throughput",
+                                                                               "storage distribution size",
+                                                                               "cumulative duration",
+                                                                               "feedback quantities"])
+            except FileNotFoundError:
+                continue
+            except ValueError:
+                continue
+
+            # assert it finished
+            max_th = df["throughput"].max()
+            app_max_throughput = app_values["max_throughput"]
+            finished = math.isclose(max_th, app_max_throughput, rel_tol=1e-5)
+            assert (finished)
+
+            # assert there is no duplicates
+            duplicates_count = len(df["feedback quantities"]) - len(df["feedback quantities"].drop_duplicates())
+            assert (duplicates_count == 0)
+
+            print(app_key, method_key, finished, duplicates_count)
+
+    return True
 
 def load_app_dse(
         log_dir,
@@ -127,7 +385,7 @@ def plot_app_dse(logdir, appname, methods):
         start_time = time.time()
         print("Plot", appname, method)
 
-        cxmax, cymax = plot_dse(df, method_name[method], color)
+        cxmax, cymax = plot_dse(df, methods[method], color)
         xmax = max(xmax, cxmax)
         ymax = max(ymax, cymax)
 
@@ -270,11 +528,11 @@ def gen_dsetable(logdir, graphs, methods, outputname="/dev/stdout"):
     return df
 
 
-def plot_all_pareto(log_dir, graphs, output_name=None):
+def plot_all_pareto(log_dir, graphs, methods, output_name=None):
     plot_all(log_dir, graphs, methods, plotfunc=plot_app_pareto, outputname=output_name)
 
 
-def plot_all_dse(log_dir, graphs, output_name=None):
+def plot_all_dse(log_dir, graphs, methods, output_name=None):
     plot_all(log_dir, graphs, methods, plotfunc=plot_app_dse, outputname=output_name)
 
 
@@ -282,8 +540,8 @@ if __name__ == "__main__":
     import argparse
     import glob
 
-    methods = {"KDSE": "red", "DKDSE": "purple", "ADKDSE": "black", "PDSE": "green"}
-    method_name = {"KDSE": "KDSE", "DKDSE": "K2DSE", "PDSE": "PDSE", "ADKDSE": "Approx K2DSE"}
+    #methods = {"KDSE": "red", "DKDSE": "purple", "ADKDSE": "black", "PDSE": "green"}
+    #method_name = {"KDSE": "KDSE", "DKDSE": "K2DSE", "PDSE": "PDSE", "ADKDSE": "Approx K2DSE"}
 
     parser = argparse.ArgumentParser(description="Generate DSE Plots")
     parser.add_argument(
@@ -323,21 +581,25 @@ if __name__ == "__main__":
             )
         )
     print("Process graphs:", graphs)
+    if len(graphs) == 0:
+        raise SystemExit(0)
 
     process = psutil.Process(os.getpid())
     start_mem = process.memory_info().rss
+    assert(sanity_check(logdir, applications=application_names, methods=method_names))
 
     if args.odse:
         print("Generate DSE output")
-        plot_all_dse(log_dir=logdir, graphs=graphs, outputname=args.odse)
+        plot_all_dse(log_dir=logdir, graphs=graphs, methods=method_names, output_name=args.odse)
 
     if args.opareto:
         print("Generate pareto output")
-        plot_all_pareto(log_dir=logdir, graphs=graphs,  outputname=args.opareto)
+        plot_all_pareto(log_dir=logdir, graphs=graphs, methods=method_names, output_name=args.opareto)
 
     if args.dsetable:
         print("Generate minimal size table")
-        gen_dsetable(logdir=logdir, graphs=graphs, methods=methods, outputname=args.dsetable)
+        gen_dsetable(logdir=logdir, graphs=graphs, methods=method_names, outputname=args.dsetable)
+
 
     end_mem = process.memory_info().rss
     print(

@@ -50,19 +50,25 @@ if [ ! -d ${LOGDIR} ]; then
     exit 1
 fi
 
-COMMAND_PREFIX="timeout --foreground  ${MAX_TIME}"
+COMMAND_PREFIX="echo timeout --foreground  ${MAX_TIME}"
 
 
 for graph in bipartite samplerate modem satellite fig8 h263decoder; do
-    echo "Run ${graph}"
-    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p LOGDIR="${LOGDIR}/"  > /dev/null 2> /dev/null
-    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p SYMB_EXEC_ORIGINAL=t -p LOGDIR="${LOGDIR}/"  > /dev/null 2> /dev/null
-    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p SYMB_EXEC_CORRECTED=t -p LOGDIR="${LOGDIR}/"  > /dev/null 2> /dev/null
-    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p LOGDIR="${LOGDIR}/"  > /dev/null 2> /dev/null
-    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a PeriodicDSE -p LOGDIR="${LOGDIR}/"  > /dev/null 2> /dev/null
-    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a SPeriodicDSE -p LOGDIR="${LOGDIR}/"  > /dev/null 2> /dev/null
-    SDF3LOGDIR="${LOGDIR}/" ${COMMAND_PREFIX} ${SDF3} --graph ${SDF3_BENCH_DIR}${graph}.xml --algo buffersize  > /dev/null 2> /dev/null
+    echo "Run ${graph} ThroughputBufferingDSE"
+    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p LOGDIR="${LOGDIR}/" # > /dev/null 2> /dev/null
+    echo "Run ${graph} ThroughputBufferingDSE SYMB_EXEC_ORIGINAL"
+    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p SYMB_EXEC_ORIGINAL=t -p LOGDIR="${LOGDIR}/" # > /dev/null 2> /dev/null
+    echo "Run ${graph} ThroughputBufferingDSE SYMB_EXEC_CORRECTED"
+    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a ThroughputBufferingDSE -p SYMB_EXEC_CORRECTED=t -p LOGDIR="${LOGDIR}/"  #> /dev/null 2> /dev/null
+    echo "Run ${graph} PeriodicDSE"
+    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a PeriodicDSE -p LOGDIR="${LOGDIR}/"  #> /dev/null 2> /dev/null
+    echo "Run ${graph}  SPeriodicDSE"
+    ${COMMAND_PREFIX} ${KITER} -f ${SDF3_BENCH_DIR}${graph}.xml -a SPeriodicDSE -p LOGDIR="${LOGDIR}/"  #> /dev/null 2> /dev/null
+    echo "Run ${graph}  SDF3"
+    SDF3LOGDIR="${LOGDIR}/" ${COMMAND_PREFIX} ${SDF3} --graph ${SDF3_BENCH_DIR}${graph}.xml --algo buffersize  #> /dev/null 2> /dev/null
 done
+
+exit 0
 
 for graph in BlackScholes Echo PDectect H264 JPEG2000; do
     echo "Run ${graph}"
